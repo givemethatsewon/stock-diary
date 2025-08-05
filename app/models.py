@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Date, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from .database import Base
+from app.database import Base
 
 
 class User(Base):
@@ -23,8 +23,8 @@ class Diary(Base):
     content = Column(Text, nullable=False)
     mood = Column(String, nullable=False)  # "happy", "sad", "worried", "angry", "excited"
     photo_url = Column(String, nullable=True)
-    # diary_date 제거 - created_at으로 대체 (사용자가 의도한 작성 시간을 UTC로 저장)
-    diary_datetime = Column(DateTime(timezone=True), nullable=False, index=True)  # 사용자가 의도한 작성 시간 (UTC)
+    diary_date = Column(DateTime(timezone=True), nullable=False, index=True)  # 사용자가 의도한 작성 시간 (UTC)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)  # 실제 서버 저장 시간 (UTC)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     llm_feedback = Column(Text, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -34,5 +34,5 @@ class Diary(Base):
 
     # Indexes
     __table_args__ = (
-        Index('idx_owner_datetime', 'owner_id', 'diary_datetime'),
+        Index('idx_owner_date', 'owner_id', 'diary_date', unique=True),  # 하루에 하나씩만 작성
     ) 

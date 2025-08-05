@@ -1,16 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
-from dotenv import load_dotenv
+from app.config import settings
 
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/stock_diary")
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL 
 
 # PostgreSQL 엔진 설정 (UTC 시간대 명시)
 engine = create_engine(
-    DATABASE_URL, 
+    SQLALCHEMY_DATABASE_URL, 
     pool_pre_ping=True,
     connect_args={
         "options": "-c timezone=utc"

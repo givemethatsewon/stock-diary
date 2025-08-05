@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional
-from datetime import date, datetime, timezone
-from . import models, schemas
+from datetime import datetime, timezone, date
+from app import models, schemas
 
 
 # User CRUD operations
@@ -28,6 +28,21 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+def get_or_create_user(db: Session, firebase_user: dict):
+    """
+    Firebase UID로 사용자를 조회하고, 없으면 새로 생성합니다.
+    """
+    user = get_user_by_firebase_uid(db, firebase_uid=firebase_user['uid'])
+    if user:
+        return user
+    
+    # 새 사용자 생성
+    new_user = schemas.UserCreate(
+        firebase_uid=firebase_user['uid'],
+        email=firebase_user['email']
+    )
+    return create_user(db, new_user)
+
 
 # Diary CRUD operations
 def get_diary(db: Session, diary_id: int, owner_id: int):
@@ -41,31 +56,59 @@ def get_diaries(
     owner_id: int, 
     skip: int = 0, 
     limit: int = 100,
-    start_datetime: Optional[datetime] = None,
-    end_datetime: Optional[datetime] = None
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None
 ):
     query = db.query(models.Diary).filter(models.Diary.owner_id == owner_id)
     
-    if start_datetime:
-        query = query.filter(models.Diary.diary_datetime >= start_datetime)
-    if end_datetime:
-        query = query.filter(models.Diary.diary_datetime <= end_datetime)
+    if start_date:
+        print(f"시작 날짜 필터: >= {start_date}")
+        query = query.filter(models.Diary.diary_date >= start_date)
+    if end_date:
+        print(f"종료 날짜 필터: <= {end_date}")
+        query = query.filter(models.Diary.diary_date <= end_date)
     
-    return query.order_by(models.Diary.diary_datetime.desc()).offset(skip).limit(limit).all()
+    results = query.order_by(models.Diary.diary_date.desc()).offset(skip).limit(limit).all()
+    print(f"조회된 일기 개수: {len(results)}")
+    for diary in results:
+        print(f"  - ID {diary.id}: {diary.diary_date}")
+    
+    return results
 
 
-def get_diaries_by_datetime_range(db: Session, owner_id: int, start_datetime: datetime, end_datetime: datetime):
-    """특정 시간 범위의 일기들을 조회 (사용자 시간대 하루 범위에 해당하는 UTC 시간 범위)"""
-    return db.query(models.Diary).filter(
+def get_diary_by_date(db: Session, owner_id: int, date: date):
+    """특정 날짜의 일기를 조회 (하루에 하나씩만 작성 가능하므로 단일 일기 반환)"""
+    from datetime import datetime, timezone
+    
+    # 주의: 이 함수는 서버에서 호출되므로 UTC 기준으로 처리
+    # 클라이언트에서 이미 사용자 현지시각을 UTC로 변환해서 보냄
+    start_datetime = datetime.combine(date, datetime.min.time(), tzinfo=timezone.utc)
+    end_datetime = datetime.combine(date, datetime.max.time(), tzinfo=timezone.utc)
+    
+    print(f"서버 날짜 조회: {date} (UTC 기준) -> {start_datetime} ~ {end_datetime}")
+    
+    diary = db.query(models.Diary).filter(
         and_(
             models.Diary.owner_id == owner_id,
-            models.Diary.diary_datetime >= start_datetime,
-            models.Diary.diary_datetime <= end_datetime
+            models.Diary.diary_date >= start_datetime,
+            models.Diary.diary_date <= end_datetime
         )
-    ).order_by(models.Diary.diary_datetime.desc()).all()
+    ).first()
+    
+    if diary:
+        print(f"찾은 일기: ID={diary.id}, 날짜={diary.diary_date}")
+    else:
+        print("해당 날짜에 일기 없음")
+    
+    return diary
 
 
 def create_diary(db: Session, diary: schemas.DiaryCreate, owner_id: int):
+    # 같은 날짜에 이미 일기가 있는지 확인
+    existing_diary = get_diary_by_date(db, owner_id, diary.diary_date.date())
+    if existing_diary:
+        raise ValueError(f"해당 날짜({diary.diary_date.date()})에 이미 일기가 작성되어 있습니다.")
+    
     db_diary = models.Diary(
         **diary.model_dump(),
         owner_id=owner_id

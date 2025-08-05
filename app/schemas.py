@@ -1,6 +1,6 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 
 # User schemas
@@ -28,8 +28,14 @@ class User(UserInDB):
 class DiaryBase(BaseModel):
     content: str
     mood: str
-    diary_datetime: datetime = Field(description="사용자가 의도한 작성 시간 (UTC)")
+    diary_date: datetime
 
+    @validator('diary_date', pre=True)
+    def parse_diary_date(cls, value):
+        if isinstance(value, str):
+            # 'Z'로 끝나는 ISO 8601 형식을 파싱
+            return datetime.fromisoformat(value.replace('Z', '+00:00'))
+        return value
 
 class DiaryCreate(DiaryBase):
     photo_url: Optional[str] = None
@@ -63,4 +69,8 @@ class AIFeedback(BaseModel):
 
 # Response schemas
 class Message(BaseModel):
-    message: str 
+    message: str
+
+# Auth schemas
+class AuthRequest(BaseModel):
+    id_token: str

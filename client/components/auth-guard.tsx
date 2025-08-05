@@ -15,7 +15,14 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('🛡️ AuthGuard 상태 확인:', { 
+      loading, 
+      user: user ? `로그인됨 (${user.email})` : '로그아웃됨',
+      timestamp: new Date().toLocaleTimeString()
+    })
+    
     if (!loading && !user) {
+      console.log('🚪 로그인 페이지로 리다이렉트 중...')
       router.push("/login")
     }
   }, [user, loading, router])

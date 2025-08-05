@@ -39,10 +39,11 @@ export function SidePanel({
   const [isRequestingFeedback, setIsRequestingFeedback] = useState(false)
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
+    const date = new Date(dateStr + 'T00:00:00') // 로컬 시간대로 해석되도록
+    const year = date.getFullYear()
     const month = date.getMonth() + 1
     const day = date.getDate()
-    return `${month}월 ${day}일`
+    return `${year}년 ${month}월 ${day}일`
   }
 
   const handleSave = () => {

@@ -6,12 +6,12 @@ import { SidePanel } from "@/components/side-panel"
 import { Header } from "@/components/header"
 import { AuthGuard } from "@/components/auth-guard"
 import { useApi } from "@/hooks/use-api"
-import { Diary, DiaryCreate } from "@/lib/api"
-import { getCurrentUserDate, getUTCDateTimeAsUserDate } from "@/lib/timezone"
+import { Diary, apiClient } from "@/lib/api"
+import { formatUTCDateTimeToUser } from "@/lib/timezone" 
 
 export interface DiaryEntry {
   id: string
-  date: string
+  date: string // 사용자 시간대 날짜 (YYYY-MM-DD)
   emotion: string
   emotionLabel: string
   text: string
@@ -21,14 +21,16 @@ export interface DiaryEntry {
 
 // API 데이터를 DiaryEntry 형식으로 변환하는 함수
 const convertApiDiaryToEntry = (diary: Diary): DiaryEntry => {
-  return {
+  const convertedEntry = {
     id: diary.id.toString(),
-    date: getUTCDateTimeAsUserDate(diary.diary_date), // UTC 날짜를 사용자 시간대로 변환
+    date: formatUTCDateTimeToUser(diary.diary_date, 'date'), // UTC datetime을 사용자 시간대 날짜로 변환
     emotion: getEmotionFromMood(diary.mood),
     emotionLabel: getEmotionLabel(diary.mood),
     text: diary.content,
-    aiFeedback: undefined, // AI 피드백은 별도로 요청해야 함
+    photo: diary.photo_url || undefined, // 사진 URL 추가
+    aiFeedback: diary.llm_feedback || undefined, // AI 피드백 추가
   }
+  return convertedEntry
 }
 
 // 기분을 이모지로 변환
@@ -71,7 +73,7 @@ const getMoodFromEmotion = (emotion: string): string => {
 }
 
 export default function Dashboard() {
-  const [selectedDate, setSelectedDate] = useState<string>(getCurrentUserDate())
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [entries, setEntries] = useState<DiaryEntry[]>([])
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [isLoading, setIsLoading] = useState(true)
@@ -79,8 +81,6 @@ export default function Dashboard() {
   const { 
     loading, 
     error, 
-    getDiaries, 
-    createDiary, 
     updateDiary, 
     deleteDiary, 
     getAIFeedback 
@@ -88,59 +88,77 @@ export default function Dashboard() {
 
   const selectedEntry = entries.find((entry) => entry.date === selectedDate)
 
-  // 일기 목록 로드
   useEffect(() => {
     loadDiaries()
   }, [])
+  
+  useEffect(() => {
+    loadDiariesForDate(selectedDate)
+  }, [selectedDate])
 
   const loadDiaries = async () => {
     setIsLoading(true)
     try {
-      const diaries = await getDiaries()
-      if (diaries) {
+      const diaries = await apiClient.getDiaries()
+      if (diaries && diaries.length > 0) {
         const convertedEntries = diaries.map(convertApiDiaryToEntry)
         setEntries(convertedEntries)
+      } else {
+        setEntries([])
       }
     } catch (err) {
       console.error('일기 목록을 불러오는데 실패했습니다:', err)
+      setEntries([])
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSaveEntry = async (entry: Omit<DiaryEntry, "id">) => {
+  const loadDiariesForDate = async (date: string) => {
     try {
-      const diaryData: DiaryCreate = {
-        diary_date: entry.date,
-        content: entry.text,
-        mood: getMoodFromEmotion(entry.emotion),
+      const diaries = await apiClient.getDiariesByUserDate(date)
+      if (diaries && diaries.length > 0) {
+        const convertedEntries = diaries.map(convertApiDiaryToEntry)
+        setEntries(prev => {
+          const filtered = prev.filter(entry => entry.date !== date)
+          return [...filtered, ...convertedEntries]
+        })
       }
+    } catch (err) {
+      console.error(`${date} 날짜 일기 조회 실패:`, err)
+    }
+  }
 
+  const handleSaveEntry = async (entry: Omit<DiaryEntry, "id" | "aiFeedback">) => {
+    try {
       const existingEntry = entries.find((e) => e.date === entry.date)
       
       if (existingEntry) {
-        // 기존 일기 수정
         const updatedDiary = await updateDiary(parseInt(existingEntry.id), {
           content: entry.text,
           mood: getMoodFromEmotion(entry.emotion),
         })
-        
         if (updatedDiary) {
-          const updatedEntry = convertApiDiaryToEntry(updatedDiary)
-          setEntries((prev) => 
-            prev.map((e) => e.id === existingEntry.id ? updatedEntry : e)
-          )
+          await loadDiaries()
         }
       } else {
-        // 새 일기 생성
-        const newDiary = await createDiary(diaryData)
+        const newDiary = await apiClient.createDiaryForUserDate(
+          entry.date,
+          entry.text,
+          getMoodFromEmotion(entry.emotion)
+        )
         if (newDiary) {
-          const newEntry = convertApiDiaryToEntry(newDiary)
-          setEntries((prev) => [...prev, newEntry])
+          await loadDiaries()
         }
       }
     } catch (err) {
       console.error('일기 저장에 실패했습니다:', err)
+      const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류'
+      if (errorMessage.includes('이미 일기가 작성되어 있습니다')) {
+        alert('해당 날짜에 이미 일기가 작성되어 있습니다. 기존 일기를 수정해주세요.')
+      } else {
+        alert('일기 저장에 실패했습니다. 다시 시도해주세요.')
+      }
     }
   }
 
@@ -148,7 +166,7 @@ export default function Dashboard() {
     try {
       const result = await deleteDiary(parseInt(entryId))
       if (result) {
-        setEntries((prev) => prev.filter((entry) => entry.id !== entryId))
+        await loadDiaries()
       }
     } catch (err) {
       console.error('일기 삭제에 실패했습니다:', err)
