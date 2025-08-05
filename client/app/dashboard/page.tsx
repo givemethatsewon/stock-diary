@@ -211,28 +211,32 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)]">
+        <div className="flex flex-col min-h-[calc(100vh-4rem)]">
           {/* Main Content Area - Calendar */}
-          <div className="flex-1 p-4 md:p-6 overflow-auto">
-            <Calendar
-              currentMonth={currentMonth}
-              onMonthChange={setCurrentMonth}
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-              entries={entries}
-            />
+          <div className="flex-none p-4 md:p-6">
+            <div className="max-w-4xl mx-auto">
+              <Calendar
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                entries={entries}
+              />
+            </div>
           </div>
 
           {/* Side Panel */}
-          <div className="w-full lg:w-1/3 border-t lg:border-t-0 lg:border-l border-slate-700 bg-slate-800">
-            <SidePanel
-              selectedDate={selectedDate}
-              selectedEntry={selectedEntry}
-              onSaveEntry={handleSaveEntry}
-              onDeleteEntry={handleDeleteEntry}
-              onGetAIFeedback={handleGetAIFeedback}
-              isLoading={loading}
-            />
+          <div className="flex-1 border-t border-slate-700 bg-slate-800">
+            <div className="max-w-4xl mx-auto">
+              <SidePanel
+                selectedDate={selectedDate}
+                selectedEntry={selectedEntry}
+                onSaveEntry={handleSaveEntry}
+                onDeleteEntry={handleDeleteEntry}
+                onGetAIFeedback={handleGetAIFeedback}
+                isLoading={loading}
+              />
+            </div>
           </div>
         </div>
       </div>

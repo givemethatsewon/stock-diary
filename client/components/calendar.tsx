@@ -105,7 +105,7 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
   }
 
   return (
-    <div className="bg-slate-700/40 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-600/50 p-3 sm:p-4 lg:p-6 h-full max-h-full flex flex-col min-h-0 overflow-hidden">
+    <div className="bg-slate-700/40 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-600/50 p-3 sm:p-4 lg:p-6 h-auto flex flex-col">
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-3 sm:mb-4 lg:mb-6 flex-shrink-0">
         <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white">
@@ -132,7 +132,7 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
       </div>
 
       {/* Week Days Header */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 sm:mb-3 flex-shrink-0">
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2 sm:mb-3 flex-shrink-0">
         {weekDays.map((day) => (
           <div key={day} className="h-6 sm:h-8 lg:h-10 flex items-center justify-center">
             <span className="text-xs sm:text-sm font-medium text-slate-400">{day}</span>
