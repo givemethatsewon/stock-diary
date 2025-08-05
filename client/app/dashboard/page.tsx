@@ -193,8 +193,8 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <AuthGuard>
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <div className="text-lg">일기를 불러오는 중...</div>
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+          <div className="text-lg text-white">일기를 불러오는 중...</div>
         </div>
       </AuthGuard>
     )
@@ -202,11 +202,11 @@ export default function Dashboard() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-900">
         <Header />
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mx-4 mt-4">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded mx-4 mt-4">
             오류: {error}
           </div>
         )}
@@ -224,7 +224,7 @@ export default function Dashboard() {
           </div>
 
           {/* Side Panel */}
-          <div className="w-full lg:w-1/3 border-t lg:border-t-0 lg:border-l border-slate-200 bg-white">
+          <div className="w-full lg:w-1/3 border-t lg:border-t-0 lg:border-l border-slate-700 bg-slate-800">
             <SidePanel
               selectedDate={selectedDate}
               selectedEntry={selectedEntry}

@@ -97,12 +97,12 @@ export function SidePanel({
   // Display existing entry
   if (selectedEntry && !isEditing) {
     return (
-      <div className="h-full flex flex-col p-4 md:p-6">
+      <div className="h-full flex flex-col p-4 md:p-6 bg-slate-800 text-white">
         <div className="flex items-center gap-3 mb-4 md:mb-6">
           <span className="text-xl md:text-2xl">{selectedEntry.emotion}</span>
           <div>
-            <h3 className="font-semibold text-slate-800">{formatDate(selectedEntry.date)}</h3>
-            <p className="text-sm text-slate-500">{selectedEntry.emotionLabel}</p>
+            <h3 className="font-semibold text-white">{formatDate(selectedEntry.date)}</h3>
+            <p className="text-sm text-slate-400">{selectedEntry.emotionLabel}</p>
           </div>
         </div>
 
@@ -111,24 +111,24 @@ export function SidePanel({
             <img
               src={selectedEntry.photo || "/placeholder.svg"}
               alt="투자 관련 이미지"
-              className="w-full h-32 md:h-48 object-cover rounded-lg border border-slate-200"
+              className="w-full h-32 md:h-48 object-cover rounded-lg border border-slate-600"
             />
           </div>
         )}
 
         <div className="flex-1 mb-4 md:mb-6">
-          <div className="bg-slate-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
-            <p className="text-slate-700 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
+          <div className="bg-slate-700 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+            <p className="text-slate-200 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
               {selectedEntry.text}
             </p>
           </div>
 
           {selectedEntry.aiFeedback && (
-            <div className="bg-blue-50 rounded-lg p-3 md:p-4 border border-blue-100">
-              <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2 text-sm md:text-base">
+            <div className="bg-blue-900/30 rounded-lg p-3 md:p-4 border border-blue-700/50">
+              <h4 className="font-medium text-blue-300 mb-2 flex items-center gap-2 text-sm md:text-base">
                 🤖 AI의 피드백
               </h4>
-              <p className="text-blue-700 text-xs md:text-sm leading-relaxed">{selectedEntry.aiFeedback}</p>
+              <p className="text-blue-200 text-xs md:text-sm leading-relaxed">{selectedEntry.aiFeedback}</p>
             </div>
           )}
         </div>
@@ -139,7 +139,7 @@ export function SidePanel({
               onClick={handleGetAIFeedback}
               disabled={isRequestingFeedback || isLoading}
               variant="outline" 
-              className="flex-1 bg-purple-50 border-purple-200 hover:bg-purple-100 text-purple-700"
+              className="flex-1 bg-purple-900/30 border-purple-500/50 hover:bg-purple-800/50 text-purple-300"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               {isRequestingFeedback ? "AI 분석 중..." : "AI 피드백 받기"}
@@ -150,7 +150,7 @@ export function SidePanel({
             <Button 
               onClick={handleEdit} 
               variant="outline" 
-              className="flex-1 bg-transparent"
+              className="flex-1 bg-slate-700 hover:bg-slate-600 text-white border-slate-600"
               disabled={isLoading}
             >
               <Edit className="w-4 h-4 mr-2" />
@@ -159,7 +159,7 @@ export function SidePanel({
             <Button
               onClick={handleDelete}
               variant="outline"
-              className="flex-1 text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
+              className="flex-1 text-red-400 border-red-500/50 hover:bg-red-900/30 bg-transparent"
               disabled={isLoading}
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -173,38 +173,40 @@ export function SidePanel({
 
   // Create/Edit entry form
   return (
-    <div className="h-full flex flex-col p-4 md:p-6">
-      <h3 className="text-lg md:text-xl font-semibold text-slate-800 mb-4 md:mb-6">
+    <div className="h-full flex flex-col p-4 md:p-6 bg-slate-800 text-white">
+      <h3 className="text-lg md:text-xl font-bold text-white mb-6">
         {isEditing ? "일기 수정하기" : "오늘의 투자 일기"}
       </h3>
 
-      <div className="mb-4 md:mb-6">
-        <p className="text-sm text-slate-600 mb-3">오늘의 기분을 선택해주세요</p>
-        <div className="grid grid-cols-3 md:flex gap-2">
+      <div className="mb-6">
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-slate-300 mb-3 px-1">오늘의 기분을 선택해주세요</h4>
+        </div>
+        <div className="grid grid-cols-3 gap-2 w-full">
           {emotions.map((emotion) => (
             <button
               key={emotion.emoji}
               onClick={() => setSelectedEmotion(emotion)}
               disabled={isLoading}
-              className={`flex flex-col items-center p-2 md:p-3 rounded-lg border transition-colors ${
+              className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all duration-200 ${
                 selectedEmotion.emoji === emotion.emoji
-                  ? "bg-blue-50 border-blue-300"
-                  : "bg-white border-slate-200 hover:bg-slate-50"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  ? "bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-500/25"
+                  : "bg-slate-700/50 border-slate-600 hover:bg-slate-600/50 hover:border-slate-500"
+              } ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
             >
-              <span className="text-lg md:text-xl mb-1">{emotion.emoji}</span>
-              <span className="text-xs text-slate-600">{emotion.label}</span>
+              <span className="text-2xl mb-2">{emotion.emoji}</span>
+              <span className="text-xs text-slate-300 font-medium">{emotion.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 mb-4 md:mb-6">
+      <div className="flex-1 mb-6">
         <Textarea
           value={diaryText}
           onChange={(e) => setDiaryText(e.target.value)}
           placeholder="오늘의 투자 경험, 생각, 다짐을 자유롭게 기록해보세요."
-          className="h-full min-h-[150px] md:min-h-[200px] resize-none border-slate-200 focus:border-blue-300 text-sm md:text-base"
+          className="h-full min-h-[180px] resize-none bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 rounded-xl"
           disabled={isLoading}
         />
       </div>
@@ -214,16 +216,16 @@ export function SidePanel({
           <img
             src={photo || "/placeholder.svg"}
             alt="업로드된 이미지"
-            className="w-full h-24 md:h-32 object-cover rounded-lg border border-slate-200"
+            className="w-full h-24 md:h-32 object-cover rounded-xl border border-slate-600"
           />
         </div>
       )}
 
-      <div className="flex gap-3 mb-4">
+      <div className="mb-6">
         <Button 
           onClick={handlePhotoUpload} 
           variant="outline" 
-          className="flex-1 bg-transparent"
+          className="w-full h-12 bg-slate-700/50 hover:bg-slate-600/50 border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white transition-all duration-200 rounded-xl font-medium"
           disabled={isLoading}
         >
           <Paperclip className="w-4 h-4 mr-2" />
@@ -234,7 +236,7 @@ export function SidePanel({
       <Button
         onClick={handleSave}
         disabled={!diaryText.trim() || isLoading}
-        className="w-full bg-green-600 hover:bg-green-700 text-white"
+        className="w-full h-12 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Save className="w-4 h-4 mr-2" />
         {isLoading ? "저장 중..." : (isEditing ? "수정 완료" : "일기 저장하기")}

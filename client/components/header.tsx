@@ -16,46 +16,52 @@ export function Header() {
   const { user, logout } = useAuth()
 
   return (
-    <header className="h-14 md:h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-50">
-      <div className="flex items-center gap-2 md:gap-3">
-        <div className="w-7 h-7 md:w-8 md:h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-          <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+    <header className="h-16 bg-slate-900 border-b border-slate-700/50 flex items-center justify-between px-4 md:px-6 sticky top-0 z-50">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center border border-cyan-400/30">
+          <BookOpen className="w-6 h-6 text-cyan-400" />
         </div>
-        <h1 className="text-lg md:text-xl font-semibold text-slate-800">시크릿 주주총회</h1>
+        <div>
+          <h1 className="text-lg font-bold text-white">시크릿 주주총회</h1>
+          <p className="text-xs text-slate-400">AI 투자 일기</p>
+        </div>
       </div>
 
       {user && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 h-auto p-2 hover:bg-slate-50">
-              <Avatar className="w-8 h-8 md:w-9 md:h-9">
+            <Button variant="ghost" className="flex items-center gap-2 h-auto p-2 rounded-xl hover:bg-slate-800/50">
+              <Avatar className="w-9 h-9">
                 <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "사용자"} />
-                <AvatarFallback className="bg-blue-100 text-blue-600 text-sm">
+                <AvatarFallback className="bg-cyan-500/20 text-cyan-400 text-sm font-semibold border border-cyan-400/30">
                   {user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col items-start">
-                <span className="text-sm font-medium text-slate-800">{user.displayName || "사용자"}</span>
-                <span className="text-xs text-slate-500">{user.email}</span>
+                <span className="text-sm font-medium text-white">{user.displayName || "사용자"}</span>
+                <span className="text-xs text-slate-400">{user.email}</span>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <div className="flex items-center gap-2 p-2">
-              <Avatar className="w-8 h-8">
+          <DropdownMenuContent align="end" className="w-60 bg-slate-800 border-slate-700">
+            <div className="flex items-center gap-3 p-3">
+              <Avatar className="w-10 h-10">
                 <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "사용자"} />
-                <AvatarFallback className="bg-blue-100 text-blue-600 text-sm">
+                <AvatarFallback className="bg-cyan-500/20 text-cyan-400 font-semibold border border-cyan-400/30">
                   {user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">{user.displayName || "사용자"}</span>
-                <span className="text-xs text-slate-500">{user.email}</span>
+                <span className="text-sm font-medium text-white">{user.displayName || "사용자"}</span>
+                <span className="text-xs text-slate-400">{user.email}</span>
               </div>
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} className="text-red-600 focus:text-red-600">
+            <DropdownMenuSeparator className="bg-slate-700" />
+            <DropdownMenuItem 
+              onClick={logout} 
+              className="text-red-400 focus:text-red-300 focus:bg-red-900/20 cursor-pointer"
+            >
               <LogOut className="w-4 h-4 mr-2" />
               로그아웃
             </DropdownMenuItem>

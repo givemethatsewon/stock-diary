@@ -12,32 +12,36 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Main content card */}
-        <div className="glass-effect rounded-3xl p-8 md:p-12 text-center">
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 md:p-12 text-center">
           {/* App Logo and Title */}
           <div className="mb-12">
-            <div className="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/20">
-              <BookOpen className="w-10 h-10 text-white" />
-              <Sparkles className="w-6 h-6 text-teal-400 absolute translate-x-2 -translate-y-2" />
+            <div className="w-20 h-20 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-500/30">
+              <BookOpen className="w-10 h-10 text-blue-400" />
+              <Sparkles className="w-6 h-6 text-cyan-400 absolute translate-x-2 -translate-y-2" />
             </div>
-            <h1 className="heading-lg text-white mb-4">시크릿 주주총회</h1>
-            <p className="text-white/70 text-lg leading-relaxed">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">시크릿 주주총회</h1>
+            <p className="text-slate-300 text-lg leading-relaxed">
               구글 계정으로 간편하게 시작하세요.
               <br />
-              <span className="text-sm text-white/50">투자 여정을 기록하고 성장하세요</span>
+              <span className="text-sm text-slate-400">투자 여정을 기록하고 성장하세요</span>
             </p>
           </div>
 
           {/* Google Sign In Button */}
-          <Button onClick={handleGoogleSignIn} className="btn-primary w-full h-14 text-lg font-semibold mb-8" disabled={loading}>
+          <Button 
+            onClick={handleGoogleSignIn} 
+            className="w-full h-14 text-lg font-semibold mb-8 bg-blue-600 hover:bg-blue-700 text-white" 
+            disabled={loading}
+          >
             {loading ? (
               <span>로그인 중...</span>
             ) : (
@@ -69,9 +73,19 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="text-center">
-            <p className="text-xs text-white/40 leading-relaxed mb-4">
+            <p className="text-xs text-slate-400 leading-relaxed mb-4">
               로그인하면 개인정보처리방침 및 서비스 약관에 동의하게 됩니다.
             </p>
+          </div>
+        </div>
+
+        {/* Additional decorative text */}
+        <div className="text-center mt-8">
+          <p className="text-slate-400 text-sm mb-2">AI와 함께하는 스마트한 투자 일기</p>
+          <div className="flex items-center justify-center gap-6 text-slate-500 text-xs">
+            <span>✨ AI 피드백</span>
+            <span>📈 투자 분석</span>
+            <span>📱 모바일 최적화</span>
           </div>
         </div>
       </div>
