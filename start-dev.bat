@@ -14,7 +14,7 @@ start "Backend Server" cmd /k "uvicorn app.main:app --reload --host 0.0.0.0 --po
 
 echo.
 echo 🌐 프론트엔드 서버 시작...
-cd stock-diary
+cd client
 if not exist "node_modules" (
     echo Node.js 의존성 설치 중...
     npm install

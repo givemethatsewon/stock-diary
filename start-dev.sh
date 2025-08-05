@@ -17,7 +17,7 @@ BACKEND_PID=$!
 
 echo ""
 echo "🌐 프론트엔드 서버 시작..."
-cd stock-diary
+cd client
 if [ ! -d "node_modules" ]; then
     echo "Node.js 의존성 설치 중..."
     npm install
