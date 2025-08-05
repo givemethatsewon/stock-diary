@@ -4,9 +4,9 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: '시크릿 주주총회',
+  description: '주식 투자 일기를 기록하고 AI 피드백을 받아보세요',
+  generator: 'Stock Diary',
 }
 
 export default function RootLayout({

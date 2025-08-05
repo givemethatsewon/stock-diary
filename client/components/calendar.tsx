@@ -54,7 +54,8 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDayWeekday; i++) {
       days.push(
-        <div key={`empty-start-${i}`} className="aspect-square sm:aspect-[4/3] lg:aspect-[5/4] xl:aspect-[6/5] flex items-center justify-center">
+        // [수정] aspect ratio 클래스 단순화 및 통일
+        <div key={`empty-start-${i}`} className="aspect-square flex items-center justify-center">
         </div>
       )
     }
@@ -70,10 +71,12 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
         <button
           key={day}
           onClick={() => onDateSelect(dateStr)}
-          className={`aspect-square sm:aspect-[4/3] lg:aspect-[5/4] xl:aspect-[6/5] p-1 sm:p-2 border border-slate-600/30 hover:bg-slate-600/50 transition-all duration-200 relative flex flex-col items-start justify-start rounded-lg group ${
+          // [수정] aspect ratio 단순화, 내부 패딩(p-*) 축소
+          className={`aspect-square p-1 sm:p-1.5 border border-slate-600/30 hover:bg-slate-600/50 transition-all duration-200 relative flex flex-col items-start justify-start rounded-lg group ${
             isSelected ? "bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-500/25" : "bg-slate-700/30"
           } ${isToday ? "ring-1 ring-cyan-400" : ""}`}
         >
+          {/* [수정] 날짜 숫자 폰트 크기(text-*) 축소 */}
           <span className={`text-xs sm:text-sm font-medium ${
             isToday ? "text-cyan-400 font-bold" : 
             isSelected ? "text-cyan-300" : "text-slate-200"
@@ -82,12 +85,14 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
           </span>
           {entry && (
             <div className="absolute inset-0 flex items-center justify-center">
+              {/* [수정] 이모지 폰트 크기(text-*) 축소 */}
               <span className="text-lg sm:text-xl lg:text-2xl" title={entry.emotionLabel}>
                 {entry.emotion}
               </span>
             </div>
           )}
-          {isToday && <div className="absolute top-1 right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-400 rounded-full"></div>}
+          {/* [수정] '오늘' 표시 점 크기(w-*, h-*) 축소 */}
+          {isToday && <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>}
         </button>,
       )
     }
@@ -96,7 +101,8 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
     const remainingCells = totalCells - (firstDayWeekday + daysInMonth)
     for (let i = 0; i < remainingCells; i++) {
       days.push(
-        <div key={`empty-end-${i}`} className="aspect-square sm:aspect-[4/3] lg:aspect-[5/4] xl:aspect-[6/5] flex items-center justify-center">
+        // [수정] aspect ratio 클래스 단순화 및 통일
+        <div key={`empty-end-${i}`} className="aspect-square flex items-center justify-center">
         </div>
       )
     }
@@ -105,43 +111,55 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
   }
 
   return (
-    <div className="bg-slate-700/40 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-600/50 p-3 sm:p-4 lg:p-6 h-auto flex flex-col">
+    // [수정] 최상위 컨테이너: 패딩(p-*) 축소, max-w-* 추가로 최대 너비 제한
+    <div className="bg-slate-700/40 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-600/50 p-3 sm:p-4 lg:p-5 h-auto flex flex-col lg:w-full max-w-4xl mx-auto">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4 lg:mb-6 flex-shrink-0">
-        <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white">
+      {/* [수정] 헤더: 하단 마진(mb-*) 축소 */}
+      <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4 flex-shrink-0">
+        {/* [수정] 헤더: 제목 폰트 크기(text-*) 축소 */}
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">
           {currentMonth.getFullYear()}년 {monthNames[currentMonth.getMonth()]}
         </h2>
-        <div className="flex gap-1 sm:gap-2">
+        {/* [수정] 헤더: 버튼 간격(gap-*) 축소 */}
+        <div className="flex gap-1 sm:gap-1.5">
           <Button
             variant="outline"
             size="icon"
             onClick={previousMonth}
-            className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-slate-600/50 hover:bg-slate-500/50 border-slate-500 hover:border-slate-400 text-slate-300 hover:text-white rounded-lg"
+            // [수정] 헤더: 버튼 크기(w-*, h-*) 축소
+            className="w-8 h-8 sm:w-9 sm:h-9 bg-slate-600/50 hover:bg-slate-500/50 border-slate-500 hover:border-slate-400 text-slate-300 hover:text-white rounded-lg"
           >
-            <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+            {/* [수정] 헤더: 아이콘 크기(w-*, h-*) 축소 */}
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
           <Button 
             variant="outline" 
             size="icon" 
             onClick={nextMonth} 
-            className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-slate-600/50 hover:bg-slate-500/50 border-slate-500 hover:border-slate-400 text-slate-300 hover:text-white rounded-lg"
+            // [수정] 헤더: 버튼 크기(w-*, h-*) 축소
+            className="w-8 h-8 sm:w-9 sm:h-9 bg-slate-600/50 hover:bg-slate-500/50 border-slate-500 hover:border-slate-400 text-slate-300 hover:text-white rounded-lg"
           >
-            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+            {/* [수정] 헤더: 아이콘 크기(w-*, h-*) 축소 */}
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
       </div>
 
       {/* Week Days Header */}
-      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2 sm:mb-3 flex-shrink-0">
+      {/* [수정] 요일 헤더: 그리드 간격(gap-*) 및 하단 마진(mb-*) 축소 */}
+      <div className="grid grid-cols-7 gap-1 lg:gap-1.5 mb-1 sm:mb-2 flex-shrink-0">
         {weekDays.map((day) => (
-          <div key={day} className="h-6 sm:h-8 lg:h-10 flex items-center justify-center">
+          // [수정] 요일 헤더: 높이(h-*) 축소
+          <div key={day} className="h-6 sm:h-8 flex items-center justify-center">
+            {/* [수정] 요일 헤더: 폰트 크기(text-*) 축소 */}
             <span className="text-xs sm:text-sm font-medium text-slate-400">{day}</span>
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 flex-1 min-h-0">
+      {/* [수정] 날짜 그리드: 그리드 간격(gap-*) 축소 */}
+      <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
         {renderCalendarDays()}
       </div>
     </div>

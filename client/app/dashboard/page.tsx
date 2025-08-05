@@ -211,10 +211,10 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+        <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
           {/* Main Content Area - Calendar */}
-          <div className="flex-none p-4 md:p-6">
-            <div className="max-w-4xl mx-auto">
+          <div className="flex-none lg:flex-1 p-4 md:p-6">
+            <div className="max-w-4xl lg:max-w-none mx-auto lg:mx-0 lg:h-full lg:flex lg:items-start">
               <Calendar
                 currentMonth={currentMonth}
                 onMonthChange={setCurrentMonth}
@@ -226,8 +226,8 @@ export default function Dashboard() {
           </div>
 
           {/* Side Panel */}
-          <div className="flex-1 border-t border-slate-700 bg-slate-800">
-            <div className="max-w-4xl mx-auto">
+          <div className="flex-1 lg:w-96 lg:flex-none border-t lg:border-t-0 lg:border-l border-slate-700 bg-slate-800">
+            <div className="max-w-4xl lg:max-w-none mx-auto lg:mx-0">
               <SidePanel
                 selectedDate={selectedDate}
                 selectedEntry={selectedEntry}
