@@ -1,0 +1,32 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+.env
+.venv
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.db
+data/
+node_modules/
+stock-diary/
+# Firebase 서비스 계정 파일은 Docker에 포함 (보안상 주의)
+# stock-diary-firebase-credentials.json 
