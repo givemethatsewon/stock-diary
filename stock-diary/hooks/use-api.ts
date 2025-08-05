@@ -1,0 +1,78 @@
+import { useState, useCallback } from 'react';
+import { apiClient, Diary, DiaryCreate, DiaryUpdate, User, AIFeedback } from '../lib/api';
+
+export const useApi = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleRequest = useCallback(async <T>(
+    requestFn: () => Promise<T>
+  ): Promise<T | null> => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await requestFn();
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 일기 관련 훅
+  const createDiary = useCallback(async (diary: DiaryCreate): Promise<Diary | null> => {
+    return handleRequest(() => apiClient.createDiary(diary));
+  }, [handleRequest]);
+
+  const getDiaries = useCallback(async (params?: {
+    skip?: number;
+    limit?: number;
+    start_date?: string;
+    end_date?: string;
+  }): Promise<Diary[] | null> => {
+    return handleRequest(() => apiClient.getDiaries(params));
+  }, [handleRequest]);
+
+  const getDiary = useCallback(async (diaryId: number): Promise<Diary | null> => {
+    return handleRequest(() => apiClient.getDiary(diaryId));
+  }, [handleRequest]);
+
+  const updateDiary = useCallback(async (diaryId: number, diary: DiaryUpdate): Promise<Diary | null> => {
+    return handleRequest(() => apiClient.updateDiary(diaryId, diary));
+  }, [handleRequest]);
+
+  const deleteDiary = useCallback(async (diaryId: number): Promise<{ message: string } | null> => {
+    return handleRequest(() => apiClient.deleteDiary(diaryId));
+  }, [handleRequest]);
+
+  const getAIFeedback = useCallback(async (diaryId: number): Promise<AIFeedback | null> => {
+    return handleRequest(() => apiClient.getAIFeedback(diaryId));
+  }, [handleRequest]);
+
+  // 사용자 관련 훅
+  const getCurrentUser = useCallback(async (): Promise<User | null> => {
+    return handleRequest(() => apiClient.getCurrentUser());
+  }, [handleRequest]);
+
+  // 헬스 체크
+  const healthCheck = useCallback(async (): Promise<{ status: string } | null> => {
+    return handleRequest(() => apiClient.healthCheck());
+  }, [handleRequest]);
+
+  return {
+    loading,
+    error,
+    createDiary,
+    getDiaries,
+    getDiary,
+    updateDiary,
+    deleteDiary,
+    getAIFeedback,
+    getCurrentUser,
+    healthCheck,
+  };
+}; 
