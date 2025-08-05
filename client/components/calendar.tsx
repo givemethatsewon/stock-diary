@@ -54,7 +54,7 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDayWeekday; i++) {
       days.push(
-        <div key={`empty-start-${i}`} className="aspect-square sm:aspect-[4/3] lg:aspect-square flex items-center justify-center">
+        <div key={`empty-start-${i}`} className="aspect-square sm:aspect-[4/3] lg:aspect-[5/4] xl:aspect-[6/5] flex items-center justify-center">
         </div>
       )
     }
@@ -70,7 +70,7 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
         <button
           key={day}
           onClick={() => onDateSelect(dateStr)}
-          className={`aspect-square sm:aspect-[4/3] lg:aspect-square p-1 sm:p-2 border border-slate-600/30 hover:bg-slate-600/50 transition-all duration-200 relative flex flex-col items-start justify-start rounded-lg group ${
+          className={`aspect-square sm:aspect-[4/3] lg:aspect-[5/4] xl:aspect-[6/5] p-1 sm:p-2 border border-slate-600/30 hover:bg-slate-600/50 transition-all duration-200 relative flex flex-col items-start justify-start rounded-lg group ${
             isSelected ? "bg-cyan-500/20 border-cyan-400 shadow-lg shadow-cyan-500/25" : "bg-slate-700/30"
           } ${isToday ? "ring-1 ring-cyan-400" : ""}`}
         >
@@ -96,7 +96,7 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
     const remainingCells = totalCells - (firstDayWeekday + daysInMonth)
     for (let i = 0; i < remainingCells; i++) {
       days.push(
-        <div key={`empty-end-${i}`} className="aspect-square sm:aspect-[4/3] lg:aspect-square flex items-center justify-center">
+        <div key={`empty-end-${i}`} className="aspect-square sm:aspect-[4/3] lg:aspect-[5/4] xl:aspect-[6/5] flex items-center justify-center">
         </div>
       )
     }
@@ -105,7 +105,7 @@ export function Calendar({ currentMonth, onMonthChange, selectedDate, onDateSele
   }
 
   return (
-    <div className="bg-slate-700/40 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-600/50 p-3 sm:p-4 lg:p-6 h-full flex flex-col min-h-0">
+    <div className="bg-slate-700/40 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-600/50 p-3 sm:p-4 lg:p-6 h-full max-h-full flex flex-col min-h-0 overflow-hidden">
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-3 sm:mb-4 lg:mb-6 flex-shrink-0">
         <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white">
