@@ -27,6 +27,6 @@ venv.bak/
 *.db
 data/
 node_modules/
-stock-diary/
+client/
 # Firebase 서비스 계정 파일은 Docker에 포함 (보안상 주의)
 # stock-diary-firebase-credentials.json 
