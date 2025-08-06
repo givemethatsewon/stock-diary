@@ -182,15 +182,15 @@ export function SidePanel({
           </div>
         </div>
 
-        {selectedEntry.photo && (
-          <div className="mb-4 md:mb-6">
-            <img
-              src={selectedEntry.photo || "/placeholder.svg"}
-              alt="투자 관련 이미지"
-              className="w-full h-32 md:h-48 object-cover rounded-lg border border-slate-600"
-            />
-          </div>
-        )}
+                 {selectedEntry.photo && (
+           <div className="mb-4 md:mb-6">
+             <img
+               src={selectedEntry.photo || "/placeholder.svg"}
+               alt="투자 관련 이미지"
+               className="w-full max-h-96 object-contain rounded-lg border border-slate-600"
+             />
+           </div>
+         )}
 
         <div className="flex-1 mb-4 md:mb-6">
           <div className="bg-slate-700 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
@@ -287,22 +287,22 @@ export function SidePanel({
         />
       </div>
 
-      {photo && (
-        <div className="mb-4 relative">
-          <img
-            src={photo}
-            alt="업로드된 이미지"
-            className="w-full h-24 md:h-32 object-cover rounded-xl border border-slate-600"
-          />
-          <button
-            onClick={handleRemovePhoto}
-            className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
-            disabled={isLoading}
-          >
-            <X className="w-3 h-3" />
-          </button>
-        </div>
-      )}
+             {photo && (
+         <div className="mb-4 relative">
+           <img
+             src={photo}
+             alt="업로드된 이미지"
+             className="w-full max-h-96 object-contain rounded-xl border border-slate-600"
+           />
+           <button
+             onClick={handleRemovePhoto}
+             className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
+             disabled={isLoading}
+           >
+             <X className="w-3 h-3" />
+           </button>
+         </div>
+       )}
 
       {uploadError && (
         <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg">
