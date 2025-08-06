@@ -137,6 +137,7 @@ export default function Dashboard() {
         const updatedDiary = await updateDiary(parseInt(existingEntry.id), {
           content: entry.text,
           mood: getMoodFromEmotion(entry.emotion),
+          photo_url: entry.photo,
         })
         if (updatedDiary) {
           await loadDiaries()
@@ -145,7 +146,8 @@ export default function Dashboard() {
         const newDiary = await apiClient.createDiaryForUserDate(
           entry.date,
           entry.text,
-          getMoodFromEmotion(entry.emotion)
+          getMoodFromEmotion(entry.emotion),
+          entry.photo
         )
         if (newDiary) {
           await loadDiaries()

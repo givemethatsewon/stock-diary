@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timezone
 from app import crud, models, schemas
 from app.deps import get_current_user, get_db
+from app.utils.s3_utils import s3_utils
+from app.config import settings
+
 
 router = APIRouter()
 
@@ -79,8 +82,6 @@ def get_diary(
 
 
 
-
-
 @router.put("/{diary_id}", response_model=schemas.Diary)
 def update_diary(
     diary_id: int,
@@ -147,3 +148,27 @@ def get_ai_feedback(
     feedback = "AI 피드백이 성공적으로 생성되었습니다."
     
     return schemas.AIFeedback(feedback=feedback) 
+
+
+@router.post("/images/presigned-url")
+async def create_presigned_url(filename: str, content_type: str = None):
+    """
+    S3에 직접 업로드할 수 있는 Presigned URL을 생성하는 API
+    """
+    try:
+        presigned_url = s3_utils.get_presigned_url(filename=filename, content_type=content_type)
+        return {"presigned_url": presigned_url, "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/images/upload-complete")
+async def upload_complete(filename: str = Body(..., embed=True)):
+    # .env 파일이나 설정 파일에서 CDN 도메인을 가져옵니다.
+    cdn_domain = settings.CDN_DOMAIN
+    
+    # 전달받은 파일명(Key)과 조합하여 최종 URL 생성
+    final_url = f"{cdn_domain}/{filename}"
+    print(f"🔗 최종 URL: {final_url}")
+    
+    return {"message": "Upload complete", "file_url": final_url}

@@ -63,6 +63,16 @@ export const useApi = () => {
     return handleRequest(() => apiClient.healthCheck());
   }, [handleRequest]);
 
+  // Presigned URL 요청
+  const getPresignedUrl = useCallback(async (filename: string, content_type: string): Promise<{ presigned_url: string; filename: string } | null> => {
+    return handleRequest(() => apiClient.getPresignedUrl(filename, content_type));
+  }, [handleRequest]);
+
+  // CDN 주소 변환 요청
+  const uploadComplete = useCallback(async (filename: string): Promise<{ message: string; file_url: string } | null> => {
+    return handleRequest(() => apiClient.uploadComplete(filename));
+  }, [handleRequest]);
+
   return {
     loading,
     error,
@@ -74,5 +84,7 @@ export const useApi = () => {
     getAIFeedback,
     getCurrentUser,
     healthCheck,
+    getPresignedUrl,
+    uploadComplete,
   };
 }; 

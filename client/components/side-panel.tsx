@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Paperclip, Save, Edit, Trash2, Sparkles } from "lucide-react"
+import { useState, ChangeEvent } from "react"
+import { Paperclip, Save, Edit, Trash2, Sparkles, Upload, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import type { DiaryEntry } from "@/app/dashboard/page"
+import { useApi } from "@/hooks/use-api"
 
 interface SidePanelProps {
   selectedDate: string
@@ -37,6 +38,9 @@ export function SidePanel({
   const [diaryText, setDiaryText] = useState("")
   const [photo, setPhoto] = useState<string>("")
   const [isRequestingFeedback, setIsRequestingFeedback] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const { getPresignedUrl, uploadComplete } = useApi()
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00') // 로컬 시간대로 해석되도록
@@ -59,6 +63,7 @@ export function SidePanel({
 
     setDiaryText("")
     setPhoto("")
+    setUploadError(null)
     setIsEditing(false)
   }
 
@@ -89,10 +94,81 @@ export function SidePanel({
     }
   }
 
-  const handlePhotoUpload = () => {
-    // Simulate photo upload
-    setPhoto("/investment-chart.png")
-  }
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      
+      // 파일 크기 검증 (10MB 제한)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setUploadError('파일 크기는 10MB 이하여야 합니다.');
+        return;
+      }
+      
+      // 이미지 파일 타입 검증
+      if (!selectedFile.type.startsWith('image/')) {
+        setUploadError('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+      
+      handleImageUpload(selectedFile);
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadError(null);
+    
+    try {
+      // 1. FastAPI 백엔드에 Presigned URL 요청
+      console.log('📤 Presigned URL 요청:', { filename: file.name, type: file.type, size: file.size });
+      const presignedData = await getPresignedUrl(file.name, file.type);
+      
+      if (!presignedData) {
+        throw new Error('Presigned URL 요청에 실패했습니다.');
+      }
+
+      const { presigned_url } = presignedData;
+      console.log('📥 Presigned URL 수신:', presigned_url);
+
+      // 2. 발급받은 Presigned URL을 사용해 파일을 S3로 직접 PUT
+      const uploadRes = await fetch(presigned_url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+        },
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('S3 업로드에 실패했습니다.');
+      }
+
+      // 3. CDN 주소 변환 API 호출
+      const key = presigned_url.split('.com/')[1].split('?')[0];
+      console.log('🔗 CDN 주소 변환 요청:', { key });
+      
+      const uploadCompleteData = await uploadComplete(key);
+      if (!uploadCompleteData) {
+        throw new Error('CDN 주소 변환에 실패했습니다.');
+      }
+      
+      console.log('✅ CDN 주소 수신:', uploadCompleteData.file_url);
+
+      // 4. CDN 주소로 상태 업데이트
+      setPhoto(uploadCompleteData.file_url);
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadError(`업로드 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhoto("");
+    setUploadError(null);
+  };
 
   // Display existing entry
   if (selectedEntry && !isEditing) {
@@ -212,25 +288,55 @@ export function SidePanel({
       </div>
 
       {photo && (
-        <div className="mb-4">
+        <div className="mb-4 relative">
           <img
-            src={photo || "/placeholder.svg"}
+            src={photo}
             alt="업로드된 이미지"
             className="w-full h-24 md:h-32 object-cover rounded-xl border border-slate-600"
           />
+          <button
+            onClick={handleRemovePhoto}
+            className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
+            disabled={isLoading}
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+
+      {uploadError && (
+        <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg">
+          <p className="text-red-300 text-sm">{uploadError}</p>
         </div>
       )}
 
       <div className="mb-6">
-        <Button 
-          onClick={handlePhotoUpload} 
-          variant="outline" 
-          className="w-full h-12 bg-slate-700/50 hover:bg-slate-600/50 border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white transition-all duration-200 rounded-xl font-medium"
-          disabled={isLoading}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          id="image-upload"
+          disabled={isLoading || isUploading}
+        />
+        <label
+          htmlFor="image-upload"
+          className={`w-full h-12 flex items-center justify-center bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white transition-all duration-200 rounded-xl font-medium cursor-pointer ${
+            (isLoading || isUploading) ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          <Paperclip className="w-4 h-4 mr-2" />
-          사진 추가
-        </Button>
+          {isUploading ? (
+            <>
+              <Upload className="w-4 h-4 mr-2 animate-pulse" />
+              업로드 중...
+            </>
+          ) : (
+            <>
+              <Paperclip className="w-4 h-4 mr-2" />
+              사진 추가
+            </>
+          )}
+        </label>
       </div>
 
       <Button

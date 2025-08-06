@@ -37,5 +37,14 @@ class Settings:
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development") # "development" or "production"
 
+    # AWS S3
+    AWS_S3_BUCKET_NAME: str = os.getenv("AWS_S3_BUCKET_NAME")
+    AWS_S3_REGION: str = os.getenv("AWS_S3_REGION")
+    AWS_ACCESS_KEY_ID: str = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+    # CDN
+    CDN_DOMAIN: str = os.getenv("AWS_CLOUDFRONT_DOMAIN")
+
 
 settings = Settings()

@@ -71,6 +71,13 @@ export function useAuth() {
         setLoading(false)
         setError(null)
         setIsFirebaseAvailable(true)
+        
+        // 로그인 성공 시 대시보드로 자동 이동
+        if (user && window.location.pathname === '/login') {
+          console.log('🔄 인증 상태 변경으로 인한 자동 리다이렉트...')
+          // 즉시 페이지 이동
+          window.location.replace("/dashboard")
+        }
       }, (error) => {
         console.error("Auth state change error:", error)
         
@@ -133,7 +140,11 @@ export function useAuth() {
       console.log('✅ 서버 세션 생성 성공')
       
       // 3. 로그인 성공 후 대시보드로 이동
-      router.push("/dashboard")
+      console.log('🚀 대시보드로 리다이렉트 시작...')
+      
+      // 강제로 페이지 이동
+      window.location.href = "/dashboard"
+      console.log('✅ 강제 리다이렉트 명령 완료')
 
     } catch (error) {
       console.error("Error signing in with Google:", error)
@@ -143,6 +154,7 @@ export function useAuth() {
       } else {
         setError((error as Error).message || "Google 로그인 중 오류가 발생했습니다.")
       }
+    } finally {
       setLoading(false)
     }
   }

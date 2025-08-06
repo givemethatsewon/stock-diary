@@ -18,7 +18,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
     console.log('🛡️ AuthGuard 상태 확인:', { 
       loading, 
       user: user ? `로그인됨 (${user.email})` : '로그아웃됨',
-      timestamp: new Date().toLocaleTimeString()
+      timestamp: new Date().toLocaleTimeString(),
+      currentPath: window.location.pathname
     })
     
     if (!loading && !user) {
