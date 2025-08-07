@@ -9,6 +9,7 @@ import { useApi } from "@/hooks/use-api"
 import { Diary, apiClient } from "@/lib/api"
 import { formatUTCDateTimeToUser } from "@/lib/timezone"
 import { auth } from "@/lib/firebase"
+import { onAuthStateChanged } from "firebase/auth"
 
 export interface DiaryEntry {
   id: string
@@ -78,6 +79,7 @@ export default function Dashboard() {
   const [entries, setEntries] = useState<DiaryEntry[]>([])
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthReady, setIsAuthReady] = useState(false)
 
   const { 
     loading, 
@@ -89,13 +91,30 @@ export default function Dashboard() {
 
   const selectedEntry = entries.find((entry) => entry.date === selectedDate)
 
+  // Firebase 인증 상태 확인
   useEffect(() => {
-    loadDiaries()
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('🔄 Dashboard에서 Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨')
+      setIsAuthReady(true)
+      
+      if (user) {
+        console.log('✅ Firebase 인증 완료, 일기 로드 시작')
+        loadDiaries()
+      } else {
+        console.log('❌ Firebase 사용자가 없음')
+        setEntries([])
+        setIsLoading(false)
+      }
+    })
+
+    return () => unsubscribe()
   }, [])
-  
+
   useEffect(() => {
-    loadDiariesForDate(selectedDate)
-  }, [selectedDate])
+    if (isAuthReady && auth.currentUser) {
+      loadDiariesForDate(selectedDate)
+    }
+  }, [selectedDate, isAuthReady])
 
   const loadDiaries = async () => {
     setIsLoading(true)
@@ -103,18 +122,8 @@ export default function Dashboard() {
       // Firebase 인증 상태 확인
       if (!auth.currentUser) {
         console.log('❌ Firebase 사용자가 없음')
-        console.log('현재 auth.currentUser:', auth.currentUser)
-        console.log('현재 URL:', window.location.href)
-        
-        // Firebase 인증이 완료될 때까지 잠시 대기
-        console.log('⏳ Firebase 인증 완료 대기 중...')
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        if (!auth.currentUser) {
-          console.log('❌ 여전히 Firebase 사용자가 없음, 빈 목록 반환')
-          setEntries([])
-          return
-        }
+        setEntries([])
+        return
       }
       
       console.log('✅ Firebase 사용자 확인됨:', auth.currentUser.email)
@@ -240,11 +249,13 @@ export default function Dashboard() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || !isAuthReady) {
     return (
       <AuthGuard>
         <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-          <div className="text-lg text-white">일기를 불러오는 중...</div>
+          <div className="text-lg text-white">
+            {!isAuthReady ? '인증 상태 확인 중...' : '일기를 불러오는 중...'}
+          </div>
         </div>
       </AuthGuard>
     )
