@@ -28,11 +28,15 @@ class Settings:
     FIREBASE_CREDENTIALS_PATH: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"] # 개발 중에는 클라이언트 주소만 허용
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001"
+    ] # 개발 중에는 클라이언트 주소만 허용
 
 
-    # Session
-    SESSION_COOKIE_NAME: str = "stock_diary_session"
+
     
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development") # "development" or "production"

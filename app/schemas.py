@@ -71,6 +71,3 @@ class AIFeedback(BaseModel):
 class Message(BaseModel):
     message: str
 
-# Auth schemas
-class AuthRequest(BaseModel):
-    id_token: str

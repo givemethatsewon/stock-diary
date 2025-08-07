@@ -7,7 +7,8 @@ import { Header } from "@/components/header"
 import { AuthGuard } from "@/components/auth-guard"
 import { useApi } from "@/hooks/use-api"
 import { Diary, apiClient } from "@/lib/api"
-import { formatUTCDateTimeToUser } from "@/lib/timezone" 
+import { formatUTCDateTimeToUser } from "@/lib/timezone"
+import { auth } from "@/lib/firebase"
 
 export interface DiaryEntry {
   id: string
@@ -99,7 +100,39 @@ export default function Dashboard() {
   const loadDiaries = async () => {
     setIsLoading(true)
     try {
+      // Firebase 인증 상태 확인
+      if (!auth.currentUser) {
+        console.log('❌ Firebase 사용자가 없음')
+        console.log('현재 auth.currentUser:', auth.currentUser)
+        console.log('현재 URL:', window.location.href)
+        
+        // Firebase 인증이 완료될 때까지 잠시 대기
+        console.log('⏳ Firebase 인증 완료 대기 중...')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        if (!auth.currentUser) {
+          console.log('❌ 여전히 Firebase 사용자가 없음, 빈 목록 반환')
+          setEntries([])
+          return
+        }
+      }
+      
+      console.log('✅ Firebase 사용자 확인됨:', auth.currentUser.email)
+      
+      // 토큰이 준비될 때까지 잠시 대기
+      try {
+        const token = await auth.currentUser.getIdToken()
+        console.log('✅ Firebase 토큰 준비 완료, 길이:', token.length)
+      } catch (tokenError) {
+        console.error('❌ 토큰 획득 실패:', tokenError)
+        setEntries([])
+        return
+      }
+      
+      console.log('🚀 API 요청 시작...')
       const diaries = await apiClient.getDiaries()
+      console.log('✅ API 응답 받음:', diaries?.length || 0, '개')
+      
       if (diaries && diaries.length > 0) {
         const convertedEntries = diaries.map(convertApiDiaryToEntry)
         setEntries(convertedEntries)
@@ -107,7 +140,16 @@ export default function Dashboard() {
         setEntries([])
       }
     } catch (err) {
-      console.error('일기 목록을 불러오는데 실패했습니다:', err)
+      console.error('❌ 일기 목록을 불러오는데 실패했습니다:', err)
+      console.error('에러 타입:', typeof err)
+      console.error('에러 메시지:', err instanceof Error ? err.message : 'Unknown error')
+      
+      // 인증 에러인 경우 로그인 페이지로 리다이렉트 (임시 비활성화)
+      if (err instanceof Error && err.message.includes('401')) {
+        console.log('⚠️ 인증 에러 감지했지만 리다이렉트는 비활성화됨')
+        // window.location.href = "/login"
+        // return
+      }
       setEntries([])
     } finally {
       setIsLoading(false)
@@ -125,7 +167,13 @@ export default function Dashboard() {
         })
       }
     } catch (err) {
-      console.error(`${date} 날짜 일기 조회 실패:`, err)
+      console.error(`❌ ${date} 날짜 일기 조회 실패:`, err)
+      // 인증 에러인 경우 로그인 페이지로 리다이렉트 (임시 비활성화)
+      if (err instanceof Error && err.message.includes('401')) {
+        console.log('⚠️ 인증 에러 감지했지만 리다이렉트는 비활성화됨')
+        // window.location.href = "/login"
+        // return
+      }
     }
   }
 

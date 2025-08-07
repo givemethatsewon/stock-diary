@@ -75,8 +75,11 @@ export function useAuth() {
         // 로그인 성공 시 대시보드로 자동 이동
         if (user && window.location.pathname === '/login') {
           console.log('🔄 인증 상태 변경으로 인한 자동 리다이렉트...')
-          // 즉시 페이지 이동
-          window.location.replace("/dashboard")
+          // 잠시 대기 후 페이지 이동 (Firebase 상태가 완전히 설정될 시간을 줌)
+          setTimeout(() => {
+            console.log('🚀 대시보드로 리다이렉트 실행...')
+            window.location.replace("/dashboard")
+          }, 500)
         }
       }, (error) => {
         console.error("Auth state change error:", error)
@@ -135,16 +138,12 @@ export function useAuth() {
       const firebaseToken = await result.user.getIdToken()
       console.log('✅ Firebase 구글 로그인 성공')
 
-      // 2. 서버에 세션 생성 요청
+      // 2. 서버에 사용자 정보 등록 (세션 생성 대신)
       await apiClient.loginWithFirebase(firebaseToken)
-      console.log('✅ 서버 세션 생성 성공')
+      console.log('✅ 서버 사용자 정보 등록 성공')
       
-      // 3. 로그인 성공 후 대시보드로 이동
-      console.log('🚀 대시보드로 리다이렉트 시작...')
-      
-      // 강제로 페이지 이동
-      window.location.href = "/dashboard"
-      console.log('✅ 강제 리다이렉트 명령 완료')
+      // 3. onAuthStateChanged에서 자동으로 리다이렉트 처리됨
+      console.log('✅ 로그인 완료, 자동 리다이렉트 대기 중...')
 
     } catch (error) {
       console.error("Error signing in with Google:", error)
@@ -169,9 +168,13 @@ export function useAuth() {
       setError(null)
       console.log('🚪 로그아웃 시작...')
       
-      // 서버에 로그아웃 요청
-      await apiClient.logout()
-      console.log('✅ 서버 세션 삭제 완료')
+      // 서버에 로그아웃 요청 (에러가 발생해도 계속 진행)
+      try {
+        await apiClient.logout()
+        console.log('✅ 서버 로그아웃 완료')
+      } catch (serverError) {
+        console.warn('서버 로그아웃 실패 (계속 진행):', serverError)
+      }
 
       // Firebase 로그아웃
       await signOut(auth)
@@ -180,10 +183,13 @@ export function useAuth() {
       // 로컬 스토리지 정리
       localStorage.removeItem('firebase_auth_user')
       
-      router.push("/login")
+      // 강제로 로그인 페이지로 이동
+      window.location.href = "/login"
     } catch (error) {
       console.error("Error signing out:", error)
       setError((error as Error).message || "로그아웃 중 오류가 발생했습니다.")
+      // 에러가 발생해도 로그인 페이지로 이동
+      window.location.href = "/login"
     }
   }
 
