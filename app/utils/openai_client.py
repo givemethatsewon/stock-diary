@@ -4,12 +4,21 @@ from typing import List, Optional, Dict, Any
 from openai import OpenAI
 from app.config import settings
 
+_client: Optional[OpenAI] = None
+
+
 def _get_client() -> OpenAI:
+    global _client
+    if _client is not None:
+        return _client
+
     api_key = settings.OPENAI_API_KEY
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되어 있지 않습니다.")
-    print("✅ OpenAI 클라이언트가 성공적으로 준비되었습니다.")
-    return OpenAI(api_key=api_key)
+
+    _client = OpenAI(api_key=api_key)
+    print("✅ OpenAI 클라이언트(싱글톤) 초기화 완료")
+    return _client
 
 
 with open("app/prompts/system_prompt.txt", "r", encoding="utf-8") as f:
