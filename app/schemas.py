@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 # User schemas
 class UserBase(BaseModel):
     email: EmailStr
+    display_name: Optional[str] = None
 
 
 class UserCreate(UserBase):

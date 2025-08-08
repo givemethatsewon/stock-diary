@@ -10,7 +10,7 @@ import firebase_admin.auth as firebase_auth
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-from app import crud, models
+from app import crud, models, schemas
 from app.config import settings
 from app.database import get_db
 
@@ -102,15 +102,19 @@ def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        # Firebase UID로 사용자 조회
+        # Firebase UID로 사용자 조회, 없으면 자동 생성
         user = crud.get_user_by_firebase_uid(db, firebase_uid)
         if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Firebase UID에 해당하는 사용자를 찾을 수 없습니다.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
+            email = firebase_payload.get("email")
+            display_name = firebase_payload.get("name") or firebase_payload.get("displayName")
+            if not email:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Firebase 토큰에 이메일이 없습니다.",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            # 이름 포함하여 사용자 생성 시도
+            user = crud.create_user(db, schemas.UserCreate(firebase_uid=firebase_uid, email=email, display_name=display_name))
         return user
         
     except HTTPException:

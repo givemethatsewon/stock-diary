@@ -31,6 +31,7 @@ def login_with_firebase(
         decoded_token = firebase_auth.verify_id_token(request.firebase_token)
         firebase_uid = decoded_token.get("uid")
         email = decoded_token.get("email")
+        display_name = decoded_token.get("name") or decoded_token.get("displayName")
         
         if not firebase_uid or not email:
             raise HTTPException(
@@ -41,10 +42,11 @@ def login_with_firebase(
         # 사용자 조회 또는 생성
         user = crud.get_user_by_firebase_uid(db, firebase_uid)
         if not user:
-            # 새 사용자 생성
+            # 새 사용자 생성 (+ display_name 저장)
             user_data = schemas.UserCreate(
                 firebase_uid=firebase_uid,
-                email=email
+                email=email,
+                display_name=display_name
             )
             user = crud.create_user(db, user_data)
         

@@ -21,7 +21,8 @@ def get_user_by_email(db: Session, email: str):
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(
         firebase_uid=user.firebase_uid,
-        email=user.email
+        email=user.email,
+        display_name=getattr(user, 'display_name', None)
     )
     db.add(db_user)
     db.commit()

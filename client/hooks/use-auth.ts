@@ -72,14 +72,21 @@ export function useAuth() {
         setError(null)
         setIsFirebaseAvailable(true)
         
-        // 로그인 성공 시 대시보드로 자동 이동
-        if (user && window.location.pathname === '/login') {
-          console.log('🔄 인증 상태 변경으로 인한 자동 리다이렉트...')
-          // 잠시 대기 후 페이지 이동 (Firebase 상태가 완전히 설정될 시간을 줌)
-          setTimeout(() => {
-            console.log('🚀 대시보드로 리다이렉트 실행...')
-            window.location.replace("/dashboard")
-          }, 500)
+        // 로그인 성공 시 대시보드로 자동 이동 (단, 이미 대시보드면 이동하지 않음)
+        if (user) {
+          const path = window.location.pathname
+          if (path === '/login') {
+            console.log('🔄 인증 완료: /login -> /dashboard 리다이렉트')
+            window.location.replace('/dashboard')
+          }
+        } else {
+          // 로그인 상태가 아니고 보호된 경로이면 로그인으로 이동 (무한 루프 방지: /login에서는 이동 안함)
+          const path = window.location.pathname
+          const isProtected = path.startsWith('/dashboard')
+          if (isProtected && path !== '/login') {
+            console.log('🔒 비인증 상태에서 보호된 경로 접근: /login으로 이동')
+            window.location.replace('/login')
+          }
         }
       }, (error) => {
         console.error("Auth state change error:", error)
