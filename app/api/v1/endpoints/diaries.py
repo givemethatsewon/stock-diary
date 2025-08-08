@@ -152,6 +152,7 @@ def get_ai_feedback(
                 content=diary.content,
                 mood=diary.mood,
                 photo_url=diary.photo_url,
+                username=current_user.display_name or "My son"
             ) as stream:
                 for event in stream:
                     if event.type == "response.output_text.delta":
