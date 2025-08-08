@@ -30,3 +30,45 @@
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
   animation: shimmer 1.5s infinite;
 }
+
+/* Fancy AI loader animations */
+@keyframes ai-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes ai-pulseGlow {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes ai-rotateSlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ai-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.6) translateY(0); }
+  50% { opacity: 1; transform: scale(1) translateY(-2px); }
+}
+
+@keyframes ai-lineShimmer {
+  0% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0.2; }
+}
+
+.animate-ai-float { animation: ai-float 3s ease-in-out infinite; }
+.animate-ai-pulse { animation: ai-pulseGlow 2.4s ease-in-out infinite; }
+.animate-ai-rotate { animation: ai-rotateSlow 10s linear infinite; }
+.animate-ai-shimmer { animation: ai-lineShimmer 1.6s ease-in-out infinite; }
+
+.ai-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle, rgba(168, 237, 255, 0.9) 0%, rgba(168, 237, 255, 0.1) 60%, transparent 70%);
+  border-radius: 9999px;
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.6));
+  animation: ai-twinkle 1.8s ease-in-out infinite;
+}
