@@ -15,46 +15,46 @@ export function useAuth() {
 
   useEffect(() => {
     try {
-      console.log('🔐 Firebase 인증 상태 감지 시작...')
+      //console.log('🔐 Firebase 인증 상태 감지 시작...')
       
       // Firebase 토큰 저장소 확인
-      console.log('🔍 브라우저 저장소 확인 중...')
-      console.log('- localStorage 키들:', Object.keys(localStorage))
-      console.log('- sessionStorage 키들:', Object.keys(sessionStorage))
+      //console.log('🔍 브라우저 저장소 확인 중...')
+      //console.log('- localStorage 키들:', Object.keys(localStorage))
+      //console.log('- sessionStorage 키들:', Object.keys(sessionStorage))
       
       // Firebase 관련 저장소 항목 찾기
       const firebaseKeys = Object.keys(localStorage).filter(key => 
         key.includes('firebase') || key.includes('Firebase')
       )
-      console.log('🔥 Firebase 관련 저장소:', firebaseKeys)
+      //console.log('🔥 Firebase 관련 저장소:', firebaseKeys)
       
       // 현재 사용자 확인
-      console.log('👤 현재 Firebase 사용자:', auth.currentUser)
+      //console.log('👤 현재 Firebase 사용자:', auth.currentUser)
       
       // 새로고침 시 로컬 스토리지에서 인증 정보 확인
       const savedUser = localStorage.getItem('firebase_auth_user')
       if (savedUser) {
         try {
           const userData = JSON.parse(savedUser)
-          console.log('💾 로컬 스토리지에서 사용자 정보 발견:', userData.email)
+          //console.log('💾 로컬 스토리지에서 사용자 정보 발견:', userData.email)
         } catch (e) {
           console.error('저장된 사용자 정보 파싱 실패:', e)
           localStorage.removeItem('firebase_auth_user')
         }
       } else {
-        console.log('❌ 로컬 스토리지에 사용자 정보 없음')
+        //console.log('❌ 로컬 스토리지에 사용자 정보 없음')
       }
       
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        console.log('👤 인증 상태 변경:', user ? `로그인됨 (${user.email})` : '로그아웃됨')
-        console.log('🕐 현재 시간:', new Date().toLocaleTimeString())
-        console.log('⚡ Fast Refresh 중인지 확인:', window.location.href)
+        //console.log('👤 인증 상태 변경:', user ? `로그인됨 (${user.email})` : '로그아웃됨')
+        //console.log('🕐 현재 시간:', new Date().toLocaleTimeString())
+        //console.log('⚡ Fast Refresh 중인지 확인:', window.location.href)
         
         if (user) {
           try {
             // 토큰 유효성 확인
             const token = await user.getIdToken()
-            console.log('🎫 토큰 획득 성공:', token ? '토큰 있음' : '토큰 없음')
+            //console.log('🎫 토큰 획득 성공:', token ? '토큰 있음' : '토큰 없음')
             localStorage.setItem('firebase_auth_user', JSON.stringify({
               uid: user.uid,
               email: user.email,
@@ -76,7 +76,7 @@ export function useAuth() {
         if (user) {
           const path = window.location.pathname
           if (path === '/login') {
-            console.log('🔄 인증 완료: /login -> /dashboard 리다이렉트')
+            //console.log('🔄 인증 완료: /login -> /dashboard 리다이렉트')
             window.location.replace('/dashboard')
           }
         } else {
@@ -84,7 +84,7 @@ export function useAuth() {
           const path = window.location.pathname
           const isProtected = path.startsWith('/dashboard')
           if (isProtected && path !== '/login') {
-            console.log('🔒 비인증 상태에서 보호된 경로 접근: /login으로 이동')
+            //console.log('🔒 비인증 상태에서 보호된 경로 접근: /login으로 이동')
             window.location.replace('/login')
           }
         }
@@ -143,14 +143,14 @@ export function useAuth() {
       // 1. Firebase로 구글 로그인
       const result = await signInWithPopup(auth, googleProvider)
       const firebaseToken = await result.user.getIdToken()
-      console.log('✅ Firebase 구글 로그인 성공')
+      //console.log('✅ Firebase 구글 로그인 성공')
 
       // 2. 서버에 사용자 정보 등록 (세션 생성 대신)
       await apiClient.loginWithFirebase(firebaseToken)
-      console.log('✅ 서버 사용자 정보 등록 성공')
+      //console.log('✅ 서버 사용자 정보 등록 성공')
       
       // 3. onAuthStateChanged에서 자동으로 리다이렉트 처리됨
-      console.log('✅ 로그인 완료, 자동 리다이렉트 대기 중...')
+      //console.log('✅ 로그인 완료, 자동 리다이렉트 대기 중...')
 
     } catch (error) {
       console.error("Error signing in with Google:", error)
@@ -173,19 +173,19 @@ export function useAuth() {
 
     try {
       setError(null)
-      console.log('🚪 로그아웃 시작...')
+      //console.log('🚪 로그아웃 시작...')
       
       // 서버에 로그아웃 요청 (에러가 발생해도 계속 진행)
       try {
         await apiClient.logout()
-        console.log('✅ 서버 로그아웃 완료')
+        //console.log('✅ 서버 로그아웃 완료')
       } catch (serverError) {
         console.warn('서버 로그아웃 실패 (계속 진행):', serverError)
       }
 
       // Firebase 로그아웃
       await signOut(auth)
-      console.log('✅ Firebase 로그아웃 완료')
+      //console.log('✅ Firebase 로그아웃 완료')
 
       // 로컬 스토리지 정리
       localStorage.removeItem('firebase_auth_user')

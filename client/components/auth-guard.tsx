@@ -23,7 +23,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     })
     
     if (!loading && !user) {
-      console.log('🚪 로그인 페이지로 리다이렉트 중...')
+      //console.log('🚪 로그인 페이지로 리다이렉트 중...')
       router.push("/login")
     }
   }, [user, loading, router])

@@ -124,7 +124,7 @@ export function SidePanel({
     
     try {
       // 1. FastAPI 백엔드에 Presigned URL 요청
-      console.log('📤 Presigned URL 요청:', { filename: file.name, type: file.type, size: file.size });
+      //console.log('📤 Presigned URL 요청:', { filename: file.name, type: file.type, size: file.size });
       const presignedData = await getPresignedUrl(file.name, file.type);
       
       if (!presignedData) {
@@ -132,7 +132,7 @@ export function SidePanel({
       }
 
       const { presigned_url } = presignedData;
-      console.log('📥 Presigned URL 수신:', presigned_url);
+      //console.log('📥 Presigned URL 수신:', presigned_url);
 
       // 2. 발급받은 Presigned URL을 사용해 파일을 S3로 직접 PUT
       const uploadRes = await fetch(presigned_url, {
@@ -149,14 +149,14 @@ export function SidePanel({
 
       // 3. CDN 주소 변환 API 호출
       const key = presigned_url.split('.com/')[1].split('?')[0];
-      console.log('🔗 CDN 주소 변환 요청:', { key });
+      //console.log('🔗 CDN 주소 변환 요청:', { key });
       
       const uploadCompleteData = await uploadComplete(key);
       if (!uploadCompleteData) {
         throw new Error('CDN 주소 변환에 실패했습니다.');
       }
       
-      console.log('✅ CDN 주소 수신:', uploadCompleteData.file_url);
+      //console.log('✅ CDN 주소 수신:', uploadCompleteData.file_url);
 
       // 4. CDN 주소로 상태 업데이트
       setPhoto(uploadCompleteData.file_url);

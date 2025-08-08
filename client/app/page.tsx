@@ -12,11 +12,11 @@ export default function HomePage() {
     if (!loading) {
       if (user) {
         // 로그인된 사용자는 대시보드로
-        console.log('✅ 인증된 사용자, 대시보드로 리다이렉트')
+        //console.log('✅ 인증된 사용자, 대시보드로 리다이렉트')
         router.replace("/dashboard")
       } else {
         // 로그인되지 않은 사용자는 로그인 페이지로
-        console.log('❌ 인증되지 않은 사용자, 로그인 페이지로 리다이렉트')
+        //console.log('❌ 인증되지 않은 사용자, 로그인 페이지로 리다이렉트')
         router.replace("/login")
       }
     }

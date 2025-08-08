@@ -96,14 +96,14 @@ export default function Dashboard() {
   // Firebase 인증 상태 확인
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('🔄 Dashboard에서 Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨')
+      //console.log('🔄 Dashboard에서 Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨')
       setIsAuthReady(true)
       
       if (user) {
-        console.log('✅ Firebase 인증 완료, 일기 로드 시작')
+        //console.log('✅ Firebase 인증 완료, 일기 로드 시작')
         loadDiaries()
       } else {
-        console.log('❌ Firebase 사용자가 없음')
+        //console.log('❌ Firebase 사용자가 없음')
         setEntries([])
         setIsLoading(false)
       }
@@ -123,26 +123,26 @@ export default function Dashboard() {
     try {
       // Firebase 인증 상태 확인
       if (!auth.currentUser) {
-        console.log('❌ Firebase 사용자가 없음')
+        //console.log('❌ Firebase 사용자가 없음')
         setEntries([])
         return
       }
       
-      console.log('✅ Firebase 사용자 확인됨:', auth.currentUser.email)
+      //console.log('✅ Firebase 사용자 확인됨:', auth.currentUser.email)
       
       // 토큰이 준비될 때까지 잠시 대기
       try {
         const token = await auth.currentUser.getIdToken()
-        console.log('✅ Firebase 토큰 준비 완료, 길이:', token.length)
+        //console.log('✅ Firebase 토큰 준비 완료, 길이:', token.length)
       } catch (tokenError) {
         console.error('❌ 토큰 획득 실패:', tokenError)
         setEntries([])
         return
       }
       
-      console.log('🚀 API 요청 시작...')
+      //console.log('🚀 API 요청 시작...')
       const diaries = await apiClient.getDiaries()
-      console.log('✅ API 응답 받음:', diaries?.length || 0, '개')
+      //console.log('✅ API 응답 받음:', diaries?.length || 0, '개')
       
       if (diaries && diaries.length > 0) {
         const convertedEntries = diaries.map(convertApiDiaryToEntry)
@@ -157,7 +157,7 @@ export default function Dashboard() {
       
       // 인증 에러인 경우 로그인 페이지로 리다이렉트 (임시 비활성화)
       if (err instanceof Error && err.message.includes('401')) {
-        console.log('⚠️ 인증 에러 감지했지만 리다이렉트는 비활성화됨')
+        //console.log('⚠️ 인증 에러 감지했지만 리다이렉트는 비활성화됨')
         // window.location.href = "/login"
         // return
       }
@@ -181,7 +181,7 @@ export default function Dashboard() {
       console.error(`❌ ${date} 날짜 일기 조회 실패:`, err)
       // 인증 에러인 경우 로그인 페이지로 리다이렉트 (임시 비활성화)
       if (err instanceof Error && err.message.includes('401')) {
-        console.log('⚠️ 인증 에러 감지했지만 리다이렉트는 비활성화됨')
+        //console.log('⚠️ 인증 에러 감지했지만 리다이렉트는 비활성화됨')
         // window.location.href = "/login"
         // return
       }
