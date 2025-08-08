@@ -12,21 +12,19 @@ def _get_client() -> OpenAI:
     return OpenAI(api_key=api_key)
 
 
+with open("app/prompts/system_prompt.txt", "r", encoding="utf-8") as f:
+    DEFAULT_SYSTEM_INSTRUCTION = f.read()
+    print("✅ DEFAULT_SYSTEM_INSTRUCTION 파일이 성공적으로 준비되었습니다.")
+
+
+
 def _build_diary_input_content(
     *, content: str, mood: str, photo_url: Optional[str]
 ) -> List[Dict[str, Any]]:
     blocks: List[Dict[str, Any]] = [
         {
             "type": "input_text",
-            "text": (
-                "You are an empathetic and concise investment journal coach. "
-                "Read the user's diary entry and mood, then provide: \n"
-                "1) A brief reflection (2-3 sentences) acknowledging the emotion,\n"
-                "2) 1-2 actionable next steps for tomorrow,\n"
-                "3) A short risk reminder when relevant.\n\n"
-                "Keep it under 120 words. Use a friendly tone in Korean.\n\n"
-                f"Diary Content:\n{content}\n\nMood: {mood}"
-            ),
+            "text": f"Diary Content:\n{content}\n\nMood: {mood}",
         }
     ]
     if photo_url:
@@ -46,6 +44,7 @@ def create_diary_feedback_stream(
     photo_url: Optional[str] = None,
     model: str = "gpt-4o-mini",
     temperature: float = 0.7,
+    system_instruction: Optional[str] = DEFAULT_SYSTEM_INSTRUCTION,
 ):
     """
     OpenAI Responses API의 스트림 객체를 반환합니다.
@@ -60,10 +59,18 @@ def create_diary_feedback_stream(
     client = _get_client()
     input_blocks = _build_diary_input_content(content=content, mood=mood, photo_url=photo_url)
 
+    messages: List[Dict[str, Any]] = []
+    if system_instruction:
+        messages.append({
+            "role": "system",
+            "content": [{"type": "input_text", "text": system_instruction}],
+        })
+    messages.append({"role": "user", "content": input_blocks})
+
     # Responses API streaming
     stream = client.responses.stream(
         model=model,
-        input=[{"role": "user", "content": input_blocks}],
+        input=messages,
         temperature=temperature,
     )
     return stream
