@@ -1,9 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,pycharm,nextjs,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode,pycharm,nextjs,react
 
-# system prompt
-app/prompts/system_prompt.txt
-
 
 ### NextJS ###
 # dependencies
