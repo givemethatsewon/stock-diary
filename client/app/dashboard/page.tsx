@@ -56,7 +56,7 @@ const getEmotionLabel = (mood: string): string => {
     'happy': '기쁨',
     'sad': '슬픔',
     'neutral': '평온',
-    'excited': '흥분',
+    'excited': '환희',
     'worried': '고민',
     'angry': '분노',
   }
@@ -244,6 +244,12 @@ export default function Dashboard() {
       // 스트리밍 동안 실시간으로 누적 표시
       let accumulated = ''
       const sourceText = entries.find(e => e.id === entryId)?.text ?? ''
+      // 스트리밍 시작 직전, 즉시 대기 상태로 세팅하여 로딩 UI 표시
+      setEntries((prev) =>
+        prev.map((entry) =>
+          entry.id === entryId ? { ...entry, aiFeedback: '', aiFeedbackSource: sourceText } : entry
+        )
+      )
       // 스트리밍 시작 직후 즉시 '분석 중' 상태 해제되도록 초기 렌더 유도
       const finalText = await streamAIFeedback(parseInt(entryId), (delta) => {
         accumulated += delta

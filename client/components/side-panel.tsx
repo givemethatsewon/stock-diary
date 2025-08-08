@@ -176,6 +176,7 @@ export function SidePanel({
 
   // Display existing entry
   if (selectedEntry && !isEditing) {
+    // 스트리밍 진행 여부는 상태에 반영된 값으로 판단하되, 별도 변수는 사용하지 않음
     const escapeMarkdownListsPreserveDashes = (text: string): string => {
       return text
         .split("\n")
@@ -223,24 +224,35 @@ export function SidePanel({
             </p>
           </div>
 
-          {selectedEntry.aiFeedback && (
+          {(selectedEntry.aiFeedback || selectedEntry.aiFeedbackSource) && (
             <div className="bg-blue-900/30 rounded-lg p-3 md:p-4 border border-blue-700/50">
               <h4 className="font-medium text-blue-300 mb-2 flex items-center gap-2 text-sm md:text-base">
                 <img src="/aistar.svg" alt="AI" className="w-4 h-4 md:w-5 md:h-5" />
-                AI의 피드백
+                주시다의 피드백
               </h4>
-              <div className="text-blue-200 text-xs md:text-sm leading-relaxed prose prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-pre:my-2">
-                <ReactMarkdown 
-                  remarkPlugins={[remarkGfm, remarkBreaks]}
-                  components={{
-                    a(props) {
-                      return <a {...props} target="_blank" rel="noopener noreferrer" />
-                    },
-                  }}
-                >
-                  {aiFeedbackForRender}
-                </ReactMarkdown>
-              </div>
+              {selectedEntry.aiFeedback ? (
+                <div className="text-blue-200 text-xs md:text-sm leading-relaxed prose prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-pre:my-2">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    components={{
+                      a(props) {
+                        return <a {...props} target="_blank" rel="noopener noreferrer" />
+                      },
+                    }}
+                  >
+                    {aiFeedbackForRender}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <div className="shimmer rounded-md bg-blue-800/20 border border-blue-700/30 p-3">
+                  <div className="text-blue-300 text-xs md:text-sm">주시다가 응답 생성중...</div>
+                  <div className="mt-2 space-y-2 opacity-80">
+                    <div className="h-3 bg-blue-700/30 rounded" />
+                    <div className="h-3 w-5/6 bg-blue-700/30 rounded" />
+                    <div className="h-3 w-4/6 bg-blue-700/30 rounded" />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
