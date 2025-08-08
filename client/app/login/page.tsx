@@ -3,9 +3,12 @@
 import { BookOpen, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
+import { useInAppBrowserDetection } from "@/hooks/use-inapp-browser"
+import { InAppBrowserBanner } from "@/components/inapp-banner"
 
 export default function LoginPage() {
   const { signInWithGoogle, loading, error } = useAuth()
+  const { isInAppBrowser, inAppBrowser } = useInAppBrowserDetection()
 
   const handleGoogleSignIn = async () => {
     await signInWithGoogle()
@@ -22,13 +25,17 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md">
         {/* Main content card */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 md:p-12 text-center">
+          {/* In-app browser notice */}
+          {isInAppBrowser && inAppBrowser && (
+            <InAppBrowserBanner kind={inAppBrowser} />
+          )}
           {/* App Logo and Title */}
           <div className="mb-12">
             <div className="w-20 h-20 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-500/30">
               <BookOpen className="w-10 h-10 text-blue-400" />
               <Sparkles className="w-6 h-6 text-cyan-400 absolute translate-x-2 -translate-y-2" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">주시다다</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">주시다</h1>
             <p className="text-slate-300 text-lg leading-relaxed">
               구글 계정으로 간편하게 시작하세요.
               <br />

@@ -132,8 +132,7 @@ export default function Dashboard() {
       
       // 토큰이 준비될 때까지 잠시 대기
       try {
-        const token = await auth.currentUser.getIdToken()
-        //console.log('✅ Firebase 토큰 준비 완료, 길이:', token.length)
+        await auth.currentUser.getIdToken()
       } catch (tokenError) {
         console.error('❌ 토큰 획득 실패:', tokenError)
         setEntries([])

@@ -4,16 +4,17 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://jusida.thatzfit.com'),
   title: '주시다',
-  description: '감정 감정 기반 투자 일지 서비스',
+  description: '감정 기반 투자 일기 서비스',
   generator: 'Stock Diary',
   icons: {
-    icon: '/favicon.ico',
+    icon: 'favicon.ico',
   },
   openGraph: {
     title: '주시다',
-    description: '감정 감정 기반 투자 일지 서비스',
-    images: ['/og-image.png'], // client/public/og-image.png 파일 필요
+    description: '감정 기반 투자 일기 서비스',
+    images: '/opengraph-image.png'
   },
 }
 
