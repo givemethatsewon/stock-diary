@@ -50,5 +50,8 @@ class Settings:
     # CDN
     CDN_DOMAIN: str = os.getenv("AWS_CLOUDFRONT_DOMAIN")
 
+    # OpenAI
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+
 
 settings = Settings()

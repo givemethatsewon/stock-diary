@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timezone
@@ -6,6 +7,7 @@ from app import crud, models, schemas
 from app.deps import get_current_user, get_db
 from app.utils.s3_utils import s3_utils
 from app.config import settings
+from app.utils.openai_client import create_diary_feedback_stream
 
 
 router = APIRouter()
@@ -124,30 +126,71 @@ def delete_diary(
     return {"message": "일기가 성공적으로 삭제되었습니다."}
 
 
-@router.post("/{diary_id}/feedback", response_model=schemas.AIFeedback)
+@router.get("/{diary_id}/ai-feedback")
 def get_ai_feedback(
     diary_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
     """
-    특정 일기 내용으로 AI 피드백을 요청합니다.
+    특정 일기 내용으로 AI 피드백을 요청하고 SSE로 스트리밍 전송합니다.
+    스트림 완료 후 최종 피드백을 DB에 저장합니다.
     """
-    # 일기 존재 확인
     diary = crud.get_diary(db=db, diary_id=diary_id, owner_id=current_user.id)
     if diary is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="일기를 찾을 수 없습니다."
         )
-    
-    # TODO: Call Large Language Model API (e.g., GPT, Gemini)
-    # 여기서 실제 AI API를 호출하여 일기 내용을 분석하고 피드백을 생성합니다.
-    # 현재는 고정된 메시지를 반환합니다.
-    
-    feedback = "AI 피드백이 성공적으로 생성되었습니다."
-    
-    return schemas.AIFeedback(feedback=feedback) 
+
+    def sse_event_generator():
+        final_text_parts: List[str] = []
+        try:
+            with create_diary_feedback_stream(
+                content=diary.content,
+                mood=diary.mood,
+                photo_url=diary.photo_url,
+            ) as stream:
+                for event in stream:
+                    if event.type == "response.output_text.delta":
+                        chunk = event.delta
+                        if chunk:
+                            final_text_parts.append(chunk)
+                            yield f"data: {chunk}\n\n"
+                    elif event.type == "response.error":
+                        # 에러 발생 시 프론트로 에러 이벤트 전송
+                        yield f"event: error\ndata: {event.error.get('message', 'OpenAI error')}\n\n"
+                # 스트림 종료 시
+                stream.close()
+
+            final_text = "".join(final_text_parts).strip()
+            if final_text:
+                # DB 업데이트 및 커밋
+                diary.llm_feedback = final_text
+                db.add(diary)
+                db.commit()
+            # 종료 신호
+            yield "event: done\ndata: [DONE]\n\n"
+        except Exception as e:
+            # 서버 내부 에러
+            yield f"event: error\ndata: {str(e)}\n\n"
+
+    # 요청 Origin에 맞춰 CORS 허용 헤더 부여 (SSE에서 명시적 설정)
+    origin = request.headers.get("origin")
+    allow_origin = (
+        origin if origin and origin in settings.CORS_ORIGINS else (settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else "*")
+    )
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Connection": "keep-alive",
+        # 명시적 CORS 허용
+        "Access-Control-Allow-Origin": allow_origin,
+    }
+
+    return StreamingResponse(sse_event_generator(), media_type="text/event-stream", headers=headers)
 
 
 @router.post("/images/presigned-url")

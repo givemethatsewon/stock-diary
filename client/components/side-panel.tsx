@@ -204,7 +204,7 @@ export function SidePanel({
               <h4 className="font-medium text-blue-300 mb-2 flex items-center gap-2 text-sm md:text-base">
                 🤖 AI의 피드백
               </h4>
-              <p className="text-blue-200 text-xs md:text-sm leading-relaxed">{selectedEntry.aiFeedback}</p>
+              <p className="text-blue-200 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{selectedEntry.aiFeedback}</p>
             </div>
           )}
         </div>

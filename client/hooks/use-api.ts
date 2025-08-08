@@ -61,6 +61,28 @@ export const useApi = () => {
     return handleRequest(() => apiClient.getAIFeedback(diaryId));
   }, [handleRequest]);
 
+  // SSE 스트리밍 기반 AI 피드백 수신
+  const streamAIFeedback = useCallback(
+    async (
+      diaryId: number,
+      onDelta: (text: string) => void
+    ): Promise<string | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const finalText = await apiClient.streamAIFeedback(diaryId, onDelta);
+        return finalText;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '스트리밍 오류가 발생했습니다.';
+        setError(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   // 사용자 관련 훅
   const getCurrentUser = useCallback(async (): Promise<User | null> => {
     return handleRequest(() => apiClient.getCurrentUser());
@@ -90,6 +112,7 @@ export const useApi = () => {
     updateDiary,
     deleteDiary,
     getAIFeedback,
+    streamAIFeedback,
     getCurrentUser,
     healthCheck,
     getPresignedUrl,

@@ -86,7 +86,7 @@ export default function Dashboard() {
     error, 
     updateDiary, 
     deleteDiary, 
-    getAIFeedback 
+    streamAIFeedback 
   } = useApi()
 
   const selectedEntry = entries.find((entry) => entry.date === selectedDate)
@@ -234,18 +234,25 @@ export default function Dashboard() {
 
   const handleGetAIFeedback = async (entryId: string) => {
     try {
-      const feedback = await getAIFeedback(parseInt(entryId))
-      if (feedback) {
-        setEntries((prev) => 
-          prev.map((entry) => 
-            entry.id === entryId 
-              ? { ...entry, aiFeedback: feedback.feedback }
-              : entry
+      // 스트리밍 동안 실시간으로 누적 표시
+      let accumulated = ''
+      const finalText = await streamAIFeedback(parseInt(entryId), (delta) => {
+        accumulated += delta
+        setEntries((prev) =>
+          prev.map((entry) =>
+            entry.id === entryId ? { ...entry, aiFeedback: accumulated } : entry
+          )
+        )
+      })
+      if (finalText !== null) {
+        setEntries((prev) =>
+          prev.map((entry) =>
+            entry.id === entryId ? { ...entry, aiFeedback: finalText } : entry
           )
         )
       }
     } catch (err) {
-      console.error('AI 피드백 요청에 실패했습니다:', err)
+      console.error('AI 피드백 요청(스트리밍)에 실패했습니다:', err)
     }
   }
 
