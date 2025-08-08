@@ -40,6 +40,15 @@ class DiaryBase(BaseModel):
 
 class DiaryCreate(DiaryBase):
     photo_url: Optional[str] = None
+    # 클라이언트가 현지시각 기준 날짜 범위를 UTC로 변환하여 전달
+    range_start_utc: Optional[datetime] = None
+    range_end_utc: Optional[datetime] = None
+
+    @validator('range_start_utc', 'range_end_utc', pre=True)
+    def parse_range_datetimes(cls, value):
+        if isinstance(value, str):
+            return datetime.fromisoformat(value.replace('Z', '+00:00'))
+        return value
 
 
 class DiaryUpdate(BaseModel):

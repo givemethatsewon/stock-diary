@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional
-from datetime import datetime, timezone, date, timedelta
+from datetime import datetime, timezone, date
 from app import models, schemas
 
 
@@ -79,7 +79,6 @@ def get_diaries(
 
 def get_diary_by_date(db: Session, owner_id: int, date: date):
     """특정 날짜의 일기를 조회 (하루에 하나씩만 작성 가능하므로 단일 일기 반환)"""
-    from datetime import datetime, timezone
     
     # 주의: 이 함수는 서버에서 호출되므로 UTC 기준으로 처리
     # 클라이언트에서 이미 사용자 현지시각을 UTC로 변환해서 보냄
@@ -105,13 +104,28 @@ def get_diary_by_date(db: Session, owner_id: int, date: date):
 
 
 def create_diary(db: Session, diary: schemas.DiaryCreate, owner_id: int):
-    # 같은 날짜에 이미 일기가 있는지 확인
-    existing_diary = get_diary_by_date(db, owner_id, diary.diary_date.date())
+    # 같은 날짜에 이미 일기가 있는지 확인 (범위 기준, 우선 range_*가 있으면 사용)
+    if diary.range_start_utc and diary.range_end_utc:
+        start_datetime = diary.range_start_utc
+        end_datetime = diary.range_end_utc
+
+    existing_diary = db.query(models.Diary).filter(
+        and_(
+            models.Diary.owner_id == owner_id,
+            models.Diary.diary_date >= start_datetime,
+            models.Diary.diary_date <= end_datetime
+        )
+    ).first()
+
+    print(f"existing_diary: {existing_diary}")
+
+
     if existing_diary:
         raise ValueError(f"해당 날짜({diary.diary_date.date()})에 이미 일기가 작성되어 있습니다.")
     
+    # 모델에 없는 필드(range_*)는 저장에서 제외
     db_diary = models.Diary(
-        **diary.model_dump(),
+        **diary.model_dump(exclude={"range_start_utc", "range_end_utc"}),
         owner_id=owner_id
     )
     db.add(db_diary)
