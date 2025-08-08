@@ -249,7 +249,10 @@ export default function Dashboard() {
           entry.id === entryId ? { ...entry, aiFeedback: '', aiFeedbackSource: sourceText } : entry
         )
       )
-      // 스트리밍 시작 직후 즉시 '분석 중' 상태 해제되도록 초기 렌더 유도
+      // 렌더 한 프레임을 보장하여 로딩 UI(스켈레톤)가 먼저 표시되도록 미세 지연
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      // 스트리밍 시작 직후부터 델타 반영
       const finalText = await streamAIFeedback(parseInt(entryId), (delta) => {
         accumulated += delta
         setEntries((prev) =>
