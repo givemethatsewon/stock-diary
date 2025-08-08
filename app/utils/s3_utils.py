@@ -35,7 +35,7 @@ class S3Utils:
             elif filename.lower().endswith(('.jpg', '.jpeg')):
                 content_type = 'image/jpeg'
             elif filename.lower().endswith(('.gif')):
-                content_type = 'image/gif'
+                content_type = 'image/gif'  
             elif filename.lower().endswith(('.webp')):
                 content_type = 'image/webp'
             else:
