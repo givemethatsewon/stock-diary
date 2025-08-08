@@ -42,6 +42,7 @@ export function SidePanel({
   const [uploadError, setUploadError] = useState<string | null>(null)
   const { getPresignedUrl, uploadComplete } = useApi()
   const [shouldShowRefetchButton, setShouldShowRefetchButton] = useState(false)
+  const [showRefetchAfterSave, setShowRefetchAfterSave] = useState(false)
 
   const handleDiaryTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
@@ -63,6 +64,14 @@ export function SidePanel({
   const handleSave = () => {
     if (!diaryText.trim()) return
 
+    // 저장 직전 변경 여부를 판단하여 저장 후 뷰 모드에서 '다시 받기' 버튼 노출
+    if (selectedEntry?.aiFeedback) {
+      const changed = diaryText.trim() !== (selectedEntry.text || '').trim()
+      setShowRefetchAfterSave(changed)
+    } else {
+      setShowRefetchAfterSave(false)
+    }
+
     onSaveEntry({
       date: selectedDate,
       emotion: selectedEmotion.emoji,
@@ -74,6 +83,7 @@ export function SidePanel({
     setDiaryText("")
     setPhoto("")
     setUploadError(null)
+    setShouldShowRefetchButton(false)
     setIsEditing(false)
   }
 
@@ -83,6 +93,7 @@ export function SidePanel({
       setDiaryText(selectedEntry.text)
       setPhoto(selectedEntry.photo || "")
       setShouldShowRefetchButton(false)
+      setShowRefetchAfterSave(false)
       setIsEditing(true)
     }
   }
@@ -99,6 +110,9 @@ export function SidePanel({
       setIsRequestingFeedback(true)
       try {
         await onGetAIFeedback(selectedEntry.id)
+        // 재요청 완료 후 버튼 숨김
+        setShowRefetchAfterSave(false)
+        setShouldShowRefetchButton(false)
       } finally {
         setIsRequestingFeedback(false)
       }
@@ -221,17 +235,6 @@ export function SidePanel({
         </div>
 
         <div className="flex flex-col gap-3">
-          {!selectedEntry.aiFeedback && onGetAIFeedback && (
-            <Button 
-              onClick={handleGetAIFeedback}
-              disabled={isRequestingFeedback || isLoading}
-              variant="outline" 
-              className="flex-1 bg-purple-900/30 border-purple-500/50 hover:bg-purple-800/50 text-purple-300"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {isRequestingFeedback ? "AI 분석 중..." : "AI 피드백 받기"}
-            </Button>
-          )}
           
           <div className="flex gap-3">
             <Button 
@@ -297,20 +300,6 @@ export function SidePanel({
           disabled={isLoading}
         />
       </div>
-
-      {selectedEntry?.aiFeedback && shouldShowRefetchButton && onGetAIFeedback && (
-        <div className="mb-4">
-          <Button
-            onClick={handleGetAIFeedback}
-            disabled={isRequestingFeedback || isLoading}
-            variant="outline"
-            className="w-full bg-purple-900/30 border-purple-500/50 hover:bg-purple-800/50 text-purple-300"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {isRequestingFeedback ? "AI 분석 중..." : "AI 피드백 다시 받기"}
-          </Button>
-        </div>
-      )}
 
              {photo && (
          <div className="mb-4 relative">

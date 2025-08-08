@@ -19,6 +19,7 @@ export interface DiaryEntry {
   text: string
   photo?: string
   aiFeedback?: string
+  aiFeedbackSource?: string
 }
 
 // API 데이터를 DiaryEntry 형식으로 변환하는 함수
@@ -31,6 +32,7 @@ const convertApiDiaryToEntry = (diary: Diary): DiaryEntry => {
     text: diary.content,
     photo: diary.photo_url || undefined, // 사진 URL 추가
     aiFeedback: diary.llm_feedback || undefined, // AI 피드백 추가
+    aiFeedbackSource: undefined,
   }
   return convertedEntry
 }
@@ -191,15 +193,17 @@ export default function Dashboard() {
       const existingEntry = entries.find((e) => e.date === entry.date)
       
       if (existingEntry) {
+        const changed = existingEntry.text.trim() !== entry.text.trim()
         const updatedDiary = await updateDiary(parseInt(existingEntry.id), {
           content: entry.text,
           mood: getMoodFromEmotion(entry.emotion),
           photo_url: entry.photo,
         })
         if (updatedDiary) {
-          // 저장 성공 시 AI 피드백 자동 요청 (스트리밍)          
           await loadDiaries()
-          await handleGetAIFeedback(existingEntry.id)
+          if (changed) {
+            await handleGetAIFeedback(existingEntry.id)
+          }
         }
       } else {
         const newDiary = await apiClient.createDiaryForUserDate(
@@ -209,7 +213,6 @@ export default function Dashboard() {
           entry.photo
         )
         if (newDiary) {
-          // 신규 작성 후 AI 피드백 자동 요청 (스트리밍)
           await loadDiaries()
           await handleGetAIFeedback(newDiary.id.toString())
         }
@@ -240,19 +243,20 @@ export default function Dashboard() {
     try {
       // 스트리밍 동안 실시간으로 누적 표시
       let accumulated = ''
+      const sourceText = entries.find(e => e.id === entryId)?.text ?? ''
       // 스트리밍 시작 직후 즉시 '분석 중' 상태 해제되도록 초기 렌더 유도
       const finalText = await streamAIFeedback(parseInt(entryId), (delta) => {
         accumulated += delta
         setEntries((prev) =>
           prev.map((entry) =>
-            entry.id === entryId ? { ...entry, aiFeedback: accumulated } : entry
+            entry.id === entryId ? { ...entry, aiFeedback: accumulated, aiFeedbackSource: sourceText } : entry
           )
         )
       })
       if (finalText !== null) {
         setEntries((prev) =>
           prev.map((entry) =>
-            entry.id === entryId ? { ...entry, aiFeedback: finalText } : entry
+            entry.id === entryId ? { ...entry, aiFeedback: finalText, aiFeedbackSource: sourceText } : entry
           )
         )
       }
