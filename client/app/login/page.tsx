@@ -28,7 +28,7 @@ export default function LoginPage() {
               <BookOpen className="w-10 h-10 text-blue-400" />
               <Sparkles className="w-6 h-6 text-cyan-400 absolute translate-x-2 -translate-y-2" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">시크릿 주주총회</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">주시다다</h1>
             <p className="text-slate-300 text-lg leading-relaxed">
               구글 계정으로 간편하게 시작하세요.
               <br />

@@ -4,15 +4,15 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '시크릿 주주총회',
-  description: '주식 투자 일기를 기록하고 AI 피드백을 받아보세요',
+  title: '주시다',
+  description: '감정 감정 기반 투자 일지 서비스',
   generator: 'Stock Diary',
   icons: {
     icon: '/favicon.ico',
   },
   openGraph: {
-    title: '시크릿 주주총회',
-    description: '주식 투자 일기를 기록하고 AI 피드백을 받아보세요',
+    title: '주시다',
+    description: '감정 감정 기반 투자 일지 서비스',
     images: ['/og-image.png'], // client/public/og-image.png 파일 필요
   },
 }

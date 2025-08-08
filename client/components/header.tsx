@@ -22,7 +22,7 @@ export function Header() {
           <BookOpen className="w-6 h-6 text-cyan-400" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-white">시크릿 주주총회</h1>
+          <h1 className="text-lg font-bold text-white">주시다</h1>
           <p className="text-xs text-slate-400">AI 투자 일기</p>
         </div>
       </div>

@@ -4,7 +4,7 @@ The layout is composed of three main sections: a header, a main content area wit
 
 **1. Top Header:**
 * A fixed header at the top of the page.
-* On the far left, the application title: "**시크릿 주주총회**" with a small, subtle icon of a diary or a lock.
+* On the far left, the application title: "**주시다**" with a small, subtle icon of a diary or a lock.
 * On the far right, a user profile avatar icon.
 
 **2. Main Content Area (Left 2/3 of the screen):**

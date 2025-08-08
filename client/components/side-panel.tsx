@@ -1,11 +1,14 @@
 "use client"
 
-import { useState, ChangeEvent } from "react"
-import { Paperclip, Save, Edit, Trash2, Sparkles, Upload, X } from "lucide-react"
+import { useState, ChangeEvent, useEffect } from "react"
+import { Paperclip, Save, Edit, Trash2, Upload, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import type { DiaryEntry } from "@/app/dashboard/page"
 import { useApi } from "@/hooks/use-api"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import remarkBreaks from "remark-breaks"
 
 interface SidePanelProps {
   selectedDate: string
@@ -30,27 +33,26 @@ export function SidePanel({
   selectedEntry, 
   onSaveEntry, 
   onDeleteEntry, 
-  onGetAIFeedback,
+  onGetAIFeedback: _onGetAIFeedback,
   isLoading = false 
 }: SidePanelProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [selectedEmotion, setSelectedEmotion] = useState(emotions[0])
   const [diaryText, setDiaryText] = useState("")
   const [photo, setPhoto] = useState<string>("")
-  const [isRequestingFeedback, setIsRequestingFeedback] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const { getPresignedUrl, uploadComplete } = useApi()
-  const [shouldShowRefetchButton, setShouldShowRefetchButton] = useState(false)
-  const [showRefetchAfterSave, setShowRefetchAfterSave] = useState(false)
+  
+  // 부모에서 전달된 핸들러 참조를 소비하여 린트 경고 방지
+  useEffect(() => {
+    // no-op
+  }, [_onGetAIFeedback])
+
 
   const handleDiaryTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     setDiaryText(value)
-    if (selectedEntry?.aiFeedback) {
-      const original = selectedEntry.text || ""
-      setShouldShowRefetchButton(value.trim() !== original.trim())
-    }
   }
 
   const formatDate = (dateStr: string) => {
@@ -64,14 +66,6 @@ export function SidePanel({
   const handleSave = () => {
     if (!diaryText.trim()) return
 
-    // 저장 직전 변경 여부를 판단하여 저장 후 뷰 모드에서 '다시 받기' 버튼 노출
-    if (selectedEntry?.aiFeedback) {
-      const changed = diaryText.trim() !== (selectedEntry.text || '').trim()
-      setShowRefetchAfterSave(changed)
-    } else {
-      setShowRefetchAfterSave(false)
-    }
-
     onSaveEntry({
       date: selectedDate,
       emotion: selectedEmotion.emoji,
@@ -83,7 +77,6 @@ export function SidePanel({
     setDiaryText("")
     setPhoto("")
     setUploadError(null)
-    setShouldShowRefetchButton(false)
     setIsEditing(false)
   }
 
@@ -92,8 +85,6 @@ export function SidePanel({
       setSelectedEmotion(emotions.find((e) => e.emoji === selectedEntry.emotion) || emotions[0])
       setDiaryText(selectedEntry.text)
       setPhoto(selectedEntry.photo || "")
-      setShouldShowRefetchButton(false)
-      setShowRefetchAfterSave(false)
       setIsEditing(true)
     }
   }
@@ -105,19 +96,7 @@ export function SidePanel({
     }
   }
 
-  const handleGetAIFeedback = async () => {
-    if (selectedEntry && onGetAIFeedback) {
-      setIsRequestingFeedback(true)
-      try {
-        await onGetAIFeedback(selectedEntry.id)
-        // 재요청 완료 후 버튼 숨김
-        setShowRefetchAfterSave(false)
-        setShouldShowRefetchButton(false)
-      } finally {
-        setIsRequestingFeedback(false)
-      }
-    }
-  }
+  // AI 피드백 재요청 로직은 현재 UI에서 사용하지 않음
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -197,6 +176,26 @@ export function SidePanel({
 
   // Display existing entry
   if (selectedEntry && !isEditing) {
+    const escapeMarkdownListsPreserveDashes = (text: string): string => {
+      return text
+        .split("\n")
+        .map((line) => {
+          // 선행 공백 후 불릿 기호(-, *, +)로 시작하면 이스케이프 처리하여 하이픈을 그대로 표시
+          if (/^\s*[-*+]\s+/.test(line)) {
+            return line.replace(/^(\s*)([-*+])(\s+)/, (_m, s, sym, sp) => `${s}\\${sym}${sp}`)
+          }
+          // 숫자. 으로 시작하는 순서 리스트도 일반 텍스트로 보이도록 점을 이스케이프
+          if (/^\s*\d+\.\s+/.test(line)) {
+            return line.replace(/^(\s*)(\d+)(\.)(\s+)/, (_m, s, num, dot, sp) => `${s}${num}\\${dot}${sp}`)
+          }
+          return line
+        })
+        .join("\n")
+    }
+
+    const aiFeedbackForRender = selectedEntry.aiFeedback
+      ? escapeMarkdownListsPreserveDashes(selectedEntry.aiFeedback)
+      : ""
     return (
       <div className="h-full flex flex-col p-4 md:p-6 bg-slate-800 text-white">
         <div className="flex items-center gap-3 mb-4 md:mb-6">
@@ -227,9 +226,21 @@ export function SidePanel({
           {selectedEntry.aiFeedback && (
             <div className="bg-blue-900/30 rounded-lg p-3 md:p-4 border border-blue-700/50">
               <h4 className="font-medium text-blue-300 mb-2 flex items-center gap-2 text-sm md:text-base">
-                🤖 AI의 피드백
+                <img src="/aistar.svg" alt="AI" className="w-4 h-4 md:w-5 md:h-5" />
+                AI의 피드백
               </h4>
-              <p className="text-blue-200 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{selectedEntry.aiFeedback}</p>
+              <div className="text-blue-200 text-xs md:text-sm leading-relaxed prose prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-pre:my-2">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm, remarkBreaks]}
+                  components={{
+                    a(props) {
+                      return <a {...props} target="_blank" rel="noopener noreferrer" />
+                    },
+                  }}
+                >
+                  {aiFeedbackForRender}
+                </ReactMarkdown>
+              </div>
             </div>
           )}
         </div>

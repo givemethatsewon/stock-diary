@@ -159,7 +159,10 @@ def get_ai_feedback(
                         chunk = event.delta
                         if chunk:
                             final_text_parts.append(chunk)
-                            yield f"data: {chunk}\n\n"
+                            # SSE 스펙상 각 줄은 반드시 'data:' 접두사를 가져야 함
+                            # 청크 내부 개행을 모두 보존하도록 각 줄에 접두사를 붙여 전송
+                            formatted = str(chunk).replace("\r\n", "\n").replace("\n", "\ndata: ")
+                            yield f"data: {formatted}\n\n"
                     elif event.type == "response.error":
                         # 에러 발생 시 프론트로 에러 이벤트 전송
                         yield f"event: error\ndata: {event.error.get('message', 'OpenAI error')}\n\n"

@@ -34,7 +34,7 @@ except Exception as e:
 
 
 app = FastAPI(
-    title="시크릿 주주총회 API",
+    title="주시다 API",
     description="투자 일기 앱을 위한 FastAPI 백엔드 서버",
     version="1.0.0"
 )
