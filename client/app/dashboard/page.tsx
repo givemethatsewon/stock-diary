@@ -197,7 +197,9 @@ export default function Dashboard() {
           photo_url: entry.photo,
         })
         if (updatedDiary) {
+          // 저장 성공 시 AI 피드백 자동 요청 (스트리밍)          
           await loadDiaries()
+          await handleGetAIFeedback(existingEntry.id)
         }
       } else {
         const newDiary = await apiClient.createDiaryForUserDate(
@@ -207,7 +209,9 @@ export default function Dashboard() {
           entry.photo
         )
         if (newDiary) {
+          // 신규 작성 후 AI 피드백 자동 요청 (스트리밍)
           await loadDiaries()
+          await handleGetAIFeedback(newDiary.id.toString())
         }
       }
     } catch (err) {
@@ -236,6 +240,7 @@ export default function Dashboard() {
     try {
       // 스트리밍 동안 실시간으로 누적 표시
       let accumulated = ''
+      // 스트리밍 시작 직후 즉시 '분석 중' 상태 해제되도록 초기 렌더 유도
       const finalText = await streamAIFeedback(parseInt(entryId), (delta) => {
         accumulated += delta
         setEntries((prev) =>

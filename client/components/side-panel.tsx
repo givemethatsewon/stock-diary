@@ -41,6 +41,16 @@ export function SidePanel({
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const { getPresignedUrl, uploadComplete } = useApi()
+  const [shouldShowRefetchButton, setShouldShowRefetchButton] = useState(false)
+
+  const handleDiaryTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setDiaryText(value)
+    if (selectedEntry?.aiFeedback) {
+      const original = selectedEntry.text || ""
+      setShouldShowRefetchButton(value.trim() !== original.trim())
+    }
+  }
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00') // 로컬 시간대로 해석되도록
@@ -72,6 +82,7 @@ export function SidePanel({
       setSelectedEmotion(emotions.find((e) => e.emoji === selectedEntry.emotion) || emotions[0])
       setDiaryText(selectedEntry.text)
       setPhoto(selectedEntry.photo || "")
+      setShouldShowRefetchButton(false)
       setIsEditing(true)
     }
   }
@@ -280,12 +291,26 @@ export function SidePanel({
       <div className="flex-1 mb-6">
         <Textarea
           value={diaryText}
-          onChange={(e) => setDiaryText(e.target.value)}
+          onChange={handleDiaryTextChange}
           placeholder="오늘의 투자 경험, 생각, 다짐을 자유롭게 기록해보세요."
           className="h-full min-h-[180px] resize-none bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 rounded-xl"
           disabled={isLoading}
         />
       </div>
+
+      {selectedEntry?.aiFeedback && shouldShowRefetchButton && onGetAIFeedback && (
+        <div className="mb-4">
+          <Button
+            onClick={handleGetAIFeedback}
+            disabled={isRequestingFeedback || isLoading}
+            variant="outline"
+            className="w-full bg-purple-900/30 border-purple-500/50 hover:bg-purple-800/50 text-purple-300"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {isRequestingFeedback ? "AI 분석 중..." : "AI 피드백 다시 받기"}
+          </Button>
+        </div>
+      )}
 
              {photo && (
          <div className="mb-4 relative">

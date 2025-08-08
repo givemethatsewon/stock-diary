@@ -147,6 +147,7 @@ def get_ai_feedback(
     def sse_event_generator():
         final_text_parts: List[str] = []
         try:
+            # 초기 플러시용 이벤트 (브라우저/프록시 버퍼 방지)
             with create_diary_feedback_stream(
                 content=diary.content,
                 mood=diary.mood,
@@ -183,11 +184,14 @@ def get_ai_feedback(
     )
 
     headers = {
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-cache, no-transform",
         "Content-Type": "text/event-stream; charset=utf-8",
         "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+        "Vary": "Origin",
         # 명시적 CORS 허용
         "Access-Control-Allow-Origin": allow_origin,
+        "Access-Control-Allow-Credentials": "true",
     }
 
     return StreamingResponse(sse_event_generator(), media_type="text/event-stream", headers=headers)
