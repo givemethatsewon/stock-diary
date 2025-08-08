@@ -50,6 +50,7 @@ class DiaryUpdate(BaseModel):
 class DiaryInDB(DiaryBase):
     id: int
     photo_url: Optional[str] = None
+    llm_feedback: Optional[str] = None
     created_at: datetime = Field(description="실제 서버 저장 시간 (UTC)")
     updated_at: datetime = Field(description="UTC 시간 기준")
     owner_id: int
