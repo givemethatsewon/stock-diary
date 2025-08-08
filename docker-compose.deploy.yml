@@ -1,0 +1,45 @@
+services:
+  api:
+    image: ghcr.io/${GHCR_OWNER:-your-org}/${GHCR_REPO:-stock-diary}-api:${IMAGE_TAG:-latest}
+    container_name: stock-diary-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase_credentials
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      ENVIRONMENT: production
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${FIREBASE_CREDENTIALS_FILE:-./stock-diary-firebase-credentials.json}:/run/secrets/firebase_credentials:ro
+    networks:
+      - stock-diary-net
+
+  web:
+    image: ghcr.io/${GHCR_OWNER:-your-org}/${GHCR_REPO:-stock-diary}-web:${IMAGE_TAG:-latest}
+    container_name: stock-diary-web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      INTERNAL_API_URL: http://api:8000
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - stock-diary-net
+
+networks:
+  stock-diary-net:
+    driver: bridge
+
+

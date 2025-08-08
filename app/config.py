@@ -21,19 +21,22 @@ class Settings:
     
     # JWT
     SECRET_KEY: str = os.getenv("SECRET_KEY")
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7일
+    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", str(60 * 24 * 7)))  # 7일
     
     # Firebase
     FIREBASE_CREDENTIALS_PATH: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     
     # CORS
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001"
-    ] # 개발 중에는 클라이언트 주소만 허용
+    # ENV CORS_ORIGINS 가 설정되면 콤마로 분리하여 사용, 없으면 기본값
+    _cors_from_env = os.getenv("CORS_ORIGINS")
+    CORS_ORIGINS: List[str] = (
+        [origin.strip() for origin in _cors_from_env.split(",") if origin.strip()]
+        if _cors_from_env
+        else [
+            "*"
+        ]
+    )
 
 
 
