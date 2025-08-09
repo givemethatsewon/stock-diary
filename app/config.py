@@ -56,7 +56,9 @@ class Settings:
     AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY")
 
     # CDN
-    CDN_DOMAIN: str = os.getenv("AWS_CLOUDFRONT_DOMAIN")
+    # 우선순위: CDN_DOMAIN > AWS_CLOUDFRONT_DOMAIN
+    # (배포 스크립트나 환경에 따라 키명이 다를 수 있어 폴백 지원)
+    CDN_DOMAIN: str | None = os.getenv("CDN_DOMAIN") or os.getenv("AWS_CLOUDFRONT_DOMAIN") or None
 
     # OpenAI
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
