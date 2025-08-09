@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   api:
     build:
@@ -12,7 +10,7 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: ${ALGORITHM}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
-      GOOGLE_APPLICATION_CREDENTIALS: /home/ec2-user/jusida/stock-diary-firebase-credentials.json
+      GOOGLE_APPLICATION_CREDENTIALS: /app/stock-diary-firebase-credentials.json
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
       AWS_S3_REGION: ${AWS_S3_REGION}
@@ -23,7 +21,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ${GOOGLE_APPLICATION_CREDENTIALS}:${GOOGLE_APPLICATION_CREDENTIALS}:ro
+      - /home/ec2-user/jusida/stock-diary-firebase-credentials.json:/app/firebase-credentials.json:ro
     networks:
       - stock-diary-net
 
