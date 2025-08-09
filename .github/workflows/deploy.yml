@@ -70,10 +70,12 @@ jobs:
             cd "$REMOTE_DIR"
 
             if [ ! -d .git ]; then
-              git clone "$GIT_REPO" .
+              git init
+              git remote add origin "$GIT_REPO" || git remote set-url origin "$GIT_REPO"
             fi
-            git fetch --all --prune
-            git checkout -f "$GIT_SHA"
+            # 대상 커밋만 얕게 가져와서 하드 리셋
+            git fetch --depth=1 origin "$GIT_SHA"
+            git reset --hard FETCH_HEAD
 
             # Firebase credentials file from base64 secret
             if [ -n "${FIREBASE_CREDENTIALS_B64:-}" ] && [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
