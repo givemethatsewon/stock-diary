@@ -1,5 +1,5 @@
 import { getApps, initializeApp } from "firebase/app"
-import { getAuth, GoogleAuthProvider } from "firebase/auth"
+import { getAuth, GoogleAuthProvider, setPersistence, browserSessionPersistence } from "firebase/auth"
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,9 +23,14 @@ if (!getApps().length) {
 
 export const auth = getAuth(app)
 
-// Firebase 인증 지속성 설정 (브라우저 로컬 스토리지 사용)
-// 기본적으로 Firebase는 이미 LOCAL persistence를 사용하므로 별도 설정 불필요
-console.log('🔒 Firebase 인증 지속성: 기본 LOCAL persistence 사용')
+// Firebase 인증 지속성을 세션 스토리지로 설정 (Local Storage 미사용)
+export const persistenceReady = setPersistence(auth, browserSessionPersistence)
+  .then(() => {
+    console.log('🔒 Firebase 인증 지속성: SESSION persistence 사용 (localStorage 미사용)')
+  })
+  .catch((err) => {
+    console.warn('⚠️ Firebase 인증 지속성 설정 실패, 기본 지속성 사용으로 폴백됨:', err)
+  })
 
 export const googleProvider = new GoogleAuthProvider()
 

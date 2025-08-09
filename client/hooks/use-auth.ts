@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { type User, onAuthStateChanged, signInWithPopup, signOut, AuthError } from "firebase/auth"
-import { auth, googleProvider } from "../lib/firebase"
+import { auth, googleProvider, persistenceReady } from "../lib/firebase"
 import { useRouter } from "next/navigation"
 import { apiClient } from "../lib/api" // apiClient import 추가
 
@@ -112,7 +112,8 @@ export function useAuth() {
     try {
       setLoading(true)
       setError(null)
-      
+      // 지속성 설정 완료 후 로그인 시도 (세션 스토리지 사용)
+      await persistenceReady.catch(() => {})
       // 1. Firebase로 구글 로그인
       const result = await signInWithPopup(auth, googleProvider)
       const firebaseToken = await result.user.getIdToken()

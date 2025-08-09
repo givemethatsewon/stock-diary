@@ -6,16 +6,6 @@ const API_BASE_URL =
     ? process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-let isRedirectingToLogin = false;
-function redirectToLoginIfNeeded() {
-  if (typeof window === 'undefined') return;
-  if (isRedirectingToLogin) return;
-  const currentPath = window.location?.pathname;
-  if (currentPath !== '/login') {
-    isRedirectingToLogin = true;
-    window.location.replace('/login');
-  }
-}
 
 export interface Diary {
   id: number;
@@ -98,7 +88,6 @@ class ApiClient {
             });
             const retryResponse = await fetch(url, config);
             if (!retryResponse.ok) {
-              redirectToLoginIfNeeded();
               throw new Error('HTTP 401: Unauthorized');
             }
             return retryResponse.json();
@@ -106,7 +95,6 @@ class ApiClient {
         } catch {
           // ignore and fall through to redirect
         }
-        redirectToLoginIfNeeded();
         throw new Error('HTTP 401: Unauthorized');
       }
       let errorData: { detail?: string } = {};
@@ -157,7 +145,6 @@ class ApiClient {
 
     if (!response.ok || !response.body) {
       if (response.status === 401) {
-        redirectToLoginIfNeeded();
         throw new Error('HTTP 401: Unauthorized');
       }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
