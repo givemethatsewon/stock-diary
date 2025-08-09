@@ -77,10 +77,13 @@ jobs:
             git fetch --depth=1 origin "$GIT_SHA"
             git reset --hard FETCH_HEAD
 
-            # Firebase credentials file from base64 secret
+            # Firebase credentials file from base64 secret (tolerate newlines/whitespace)
             if [ -n "${FIREBASE_CREDENTIALS_B64:-}" ] && [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
               install -d "$(dirname "$GOOGLE_APPLICATION_CREDENTIALS")"
-              echo "$FIREBASE_CREDENTIALS_B64" | base64 -d > "$GOOGLE_APPLICATION_CREDENTIALS"
+              if ! echo "$FIREBASE_CREDENTIALS_B64" | base64 -di > "$GOOGLE_APPLICATION_CREDENTIALS"; then
+                echo "Failed to decode FIREBASE_CREDENTIALS_B64. Ensure it is plain base64 without quotes." >&2
+                exit 1
+              fi
               chmod 600 "$GOOGLE_APPLICATION_CREDENTIALS"
             fi
 
