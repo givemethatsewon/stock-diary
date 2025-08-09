@@ -38,11 +38,16 @@ class Settings:
         ]
     )
 
+    # 정규식으로 모든 오리진 허용 (credentials와 함께 사용할 때 * 대신 사용)
+    CORS_ORIGIN_REGEX: str = ".*"
 
 
-    
-    # Environment
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development") # "development" or "production"
+
+
+    # Cookie settings
+    COOKIE_DOMAIN: str | None = os.getenv("COOKIE_DOMAIN") or None
+    COOKIE_SECURE: bool = True
+    COOKIE_SAMESITE: str = "none"  # "lax" | "strict" | "none"
 
     # AWS S3
     AWS_S3_BUCKET_NAME: str = os.getenv("AWS_S3_BUCKET_NAME")

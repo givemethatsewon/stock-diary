@@ -70,48 +70,42 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
-    // Firebase 토큰 가져오기
-    let authToken = null;
-    try {
-      // Firebase auth 객체 가져오기
-      const { auth } = await import('../lib/firebase');
-      if (!auth) {
-        console.warn('⚠️ SSR 환경 또는 Firebase 미초기화: auth 없음');
-      }
-      
-      if (auth && auth.currentUser) {
-        //console.log('✅ Firebase 사용자 발견:', auth.currentUser.email);
-        authToken = await auth.currentUser.getIdToken();
-        //console.log('✅ Firebase 토큰 획득 성공, 길이:', authToken?.length || 0);
-      } else if (auth) {
-        console.warn('❌ Firebase 사용자가 없음');
-      }
-    } catch (error) {
-      console.error('❌ Firebase 토큰 획득 실패:', error);
-    }
-    
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
     
-    // Authorization 헤더 추가
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-      //console.log('🔐 Authorization 헤더 추가됨');
-    } else {
-      console.warn('⚠️ Firebase 토큰이 없어 Authorization 헤더를 추가하지 않음');
-    }
-    
     const config: RequestInit = {
       headers,
       ...options,
+      credentials: 'include',
     };
 
     const response = await fetch(url, config);
 
     if (!response.ok) {
       if (response.status === 401) {
+        // 쿠키 세션이 만료되었을 수 있으므로, Firebase 토큰으로 쿠키를 재설정 후 1회 재시도
+        try {
+          const { auth } = await import('../lib/firebase');
+          if (auth && auth.currentUser) {
+            const freshToken = await auth.currentUser.getIdToken(true);
+            await fetch(`${this.baseUrl}/api/v1/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ firebase_token: freshToken }),
+              credentials: 'include',
+            });
+            const retryResponse = await fetch(url, config);
+            if (!retryResponse.ok) {
+              redirectToLoginIfNeeded();
+              throw new Error('HTTP 401: Unauthorized');
+            }
+            return retryResponse.json();
+          }
+        } catch {
+          // ignore and fall through to redirect
+        }
         redirectToLoginIfNeeded();
         throw new Error('HTTP 401: Unauthorized');
       }
@@ -150,19 +144,7 @@ class ApiClient {
   ): Promise<string> {
     const url = `${this.baseUrl}/api/v1/diaries/${diaryId}/ai-feedback`;
 
-    // Firebase 토큰 준비
-    let authToken: string | null = null;
-    try {
-      const { auth } = await import('../lib/firebase');
-      if (auth && auth.currentUser) {
-        authToken = await auth.currentUser.getIdToken();
-      }
-    } catch {
-      // ignore
-    }
-
     const headers: Record<string, string> = {
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       Accept: 'text/event-stream',
     };
 
@@ -170,6 +152,7 @@ class ApiClient {
       method: 'GET',
       headers,
       cache: 'no-store',
+      credentials: 'include',
     });
 
     if (!response.ok || !response.body) {

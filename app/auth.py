@@ -77,17 +77,25 @@ def get_current_user(
     API 요청의 Authorization 헤더에서 Firebase Bearer 토큰을 읽어 현재 사용자를 반환하는 의존성.
     이 함수가 모든 보호된 API 엔드포인트의 인증을 담당합니다.
     """
-    # Authorization 헤더에서 Bearer 토큰 확인
+    # 1) Authorization 헤더에서 Bearer 토큰 확인
     auth_header = request.headers.get("Authorization")
+    token: Optional[str] = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
     
-    if not auth_header or not auth_header.startswith("Bearer "):
+    # 2) 헤더가 없으면, HttpOnly 쿠키에서 대체 추출
+    if token is None:
+        try:
+            token = request.cookies.get("access_token")
+        except Exception:
+            token = None
+
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization 헤더에 Bearer 토큰이 필요합니다",
+            detail="인증 토큰이 필요합니다",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    token = auth_header.split(" ")[1]
     print(f"🔐 Bearer 토큰 감지: {token[:20]}...")
     
     # Firebase 토큰 검증

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from 'react';
 import { apiClient, Diary, DiaryCreate, DiaryUpdate, User, AIFeedback } from '../lib/api';
 
@@ -21,7 +23,9 @@ export const useApi = () => {
       // 인증 에러인 경우 로그인 페이지로 리다이렉트
       if (err instanceof Error && errorMessage.includes('401')) {
         //console.log('인증 에러 감지, 로그인 페이지로 리다이렉트...');
-        window.location.href = "/login";
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
         return null;
       }
       

@@ -39,10 +39,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS 설정
+# CORS 설정 (환경변수 없이도 동작하도록 정규식 기반 허용)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=[],
+    allow_origin_regex=getattr(settings, "CORS_ORIGIN_REGEX", ".*"),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

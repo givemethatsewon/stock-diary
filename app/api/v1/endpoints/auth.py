@@ -1,7 +1,7 @@
 """
 Firebase 인증 관련 API 엔드포인트
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
@@ -21,6 +21,7 @@ class FirebaseTokenRequest(BaseModel):
 @router.post("/login")
 def login_with_firebase(
     request: FirebaseTokenRequest,
+    response: Response,
     db: Session = Depends(get_db)
 ):
     """
@@ -50,6 +51,24 @@ def login_with_firebase(
             )
             user = crud.create_user(db, user_data)
         
+        # 세션용 쿠키 발급 (선택적, 모바일 브라우저 호환 강화를 위해)
+        try:
+            from app.config import settings
+            # Firebase 토큰은 짧고 회전하므로 여기서는 그대로 쿠키에 저장하지 않고, 서버 발급 토큰이 있다면 사용
+            # 간단화: Firebase 토큰을 임시 세션 쿠키로 전달 (백엔드가 헤더 우선, 쿠키 대체 허용)
+            response.set_cookie(
+                key="access_token",
+                value=request.firebase_token,
+                httponly=True,
+                secure=settings.COOKIE_SECURE,
+                samesite="none" if settings.COOKIE_SAMESITE.lower() == "none" else settings.COOKIE_SAMESITE,
+                domain=settings.COOKIE_DOMAIN,
+                path="/",
+            )
+        except Exception:
+            # 쿠키 설정 실패는 로그인 자체를 막지 않음
+            pass
+
         return {"message": "로그인 성공", "user": user}
         
     except Exception as e:
@@ -60,10 +79,19 @@ def login_with_firebase(
 
 
 @router.post("/logout")
-def logout():
+def logout(response: Response):
     """
     로그아웃 (클라이언트에서 토큰 삭제)
     """
+    try:
+        from app.config import settings
+        response.delete_cookie(
+            key="access_token",
+            domain=settings.COOKIE_DOMAIN,
+            path="/",
+        )
+    except Exception:
+        pass
     return {"message": "로그아웃되었습니다"}
 
 

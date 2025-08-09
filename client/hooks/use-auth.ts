@@ -31,41 +31,14 @@ export function useAuth() {
       // 현재 사용자 확인
       //console.log('👤 현재 Firebase 사용자:', auth.currentUser)
       
-      // 새로고침 시 로컬 스토리지에서 인증 정보 확인
-      const savedUser = localStorage.getItem('firebase_auth_user')
-      if (savedUser) {
-        try {
-          const userData = JSON.parse(savedUser)
-          //console.log('💾 로컬 스토리지에서 사용자 정보 발견:', userData.email)
-        } catch (e) {
-          console.error('저장된 사용자 정보 파싱 실패:', e)
-          localStorage.removeItem('firebase_auth_user')
-        }
-      } else {
-        //console.log('❌ 로컬 스토리지에 사용자 정보 없음')
-      }
+      // 로컬 스토리지 기반 복구 로직 제거 (쿠키만 사용)
       
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         //console.log('👤 인증 상태 변경:', user ? `로그인됨 (${user.email})` : '로그아웃됨')
         //console.log('🕐 현재 시간:', new Date().toLocaleTimeString())
         //console.log('⚡ Fast Refresh 중인지 확인:', window.location.href)
         
-        if (user) {
-          try {
-            // 토큰 유효성 확인
-            const token = await user.getIdToken()
-            //console.log('🎫 토큰 획득 성공:', token ? '토큰 있음' : '토큰 없음')
-            localStorage.setItem('firebase_auth_user', JSON.stringify({
-              uid: user.uid,
-              email: user.email,
-              timestamp: Date.now()
-            }))
-          } catch (tokenError) {
-            console.error('토큰 획득 실패:', tokenError)
-          }
-        } else {
-          localStorage.removeItem('firebase_auth_user')
-        }
+        // 쿠키 세션만 사용하므로 로컬스토리지 캐시는 유지하지 않음
         
         setUser(user)
         setLoading(false)
@@ -187,8 +160,7 @@ export function useAuth() {
       await signOut(auth)
       //console.log('✅ Firebase 로그아웃 완료')
 
-      // 로컬 스토리지 정리
-      localStorage.removeItem('firebase_auth_user')
+      // 로컬 스토리지 사용하지 않음
       
       // 강제로 로그인 페이지로 이동
       window.location.href = "/login"
